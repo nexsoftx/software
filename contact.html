@@ -147,12 +147,10 @@
         </div>
     </footer>
 
-    <!-- 🟢 Google Sheet & Telegram Integration Script 🟢 -->
+    <!-- 🟢 Secure Google Sheet Integration Script 🟢 -->
     <script>
-        // ⚠️ আপনার নিজস্ব ডাটা এখানে বসান
-        const TELEGRAM_BOT_TOKEN = '8865753567:AAH-uU8bj8z1kkM62kmQfXlABAfWORq3MuM';
-        const TELEGRAM_CHAT_ID = '1903452439';
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6t88YSYAyRnNbbAqdk5O9r5Mw13wRfQ22EdxCQYO5_I3Hyqd_1A7edN2NIWMp01HK/exec';
+        // এখানে শুধু গুগল শিটের লিংক থাকবে, কোনো টেলিগ্রাম টোকেন থাকবে না
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQ9a5ZI-0V_QonPP55eCfTlONKkv10g_jXyS3geYwwAcSIJ79pfPKObunqcSEpqT6b/exec';
 
         document.getElementById('telegramForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -165,50 +163,26 @@
             btn.style.pointerEvents = 'none';
 
             // ইউজারের দেওয়া ডাটা সংগ্রহ
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value || 'N/A';
-            const message = document.getElementById('message').value;
-
-            // ১. টেলিগ্রামের জন্য ডাটা প্রস্তুত
-            const telegramMessage = `📩 *New Contact Message*\n\n👤 *Name:* ${name}\n📧 *Email:* ${email}\n📞 *Phone:* ${phone}\n💬 *Message:* ${message}`;
-            const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-            const telegramData = {
-                chat_id: TELEGRAM_CHAT_ID,
-                text: telegramMessage,
-                parse_mode: 'Markdown'
-            };
-
-            // ২. গুগল শিটের জন্য ডাটা প্রস্তুত
             const formData = new FormData();
-            formData.append('Name', name);
-            formData.append('Email', email);
-            formData.append('Phone', phone);
-            formData.append('Message', message);
+            formData.append('Name', document.getElementById('name').value);
+            formData.append('Email', document.getElementById('email').value);
+            formData.append('Phone', document.getElementById('phone').value || 'N/A');
+            formData.append('Message', document.getElementById('message').value);
 
             try {
-                // টেলিগ্রাম এবং গুগল শিট এ একই সাথে ডাটা পাঠানো হচ্ছে
-                await Promise.all([
-                    fetch(telegramUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(telegramData)
-                    }),
-                    fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        body: formData,
-                        mode: 'no-cors' // Google Sheet এর CORS এরর এড়ানোর জন্য
-                    })
-                ]);
+                // ডাটা শুধুমাত্র গুগল শিটে পাঠানো হচ্ছে
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors' 
+                });
 
-                // সাকসেস মেসেজ দেখানো (যদি app.js এর custom modal থাকে, নাহলে নরমাল অ্যালার্ট)
                 if (typeof window.showCustomModal === 'function') {
                     window.showCustomModal('success', 'Message Sent!', 'Thank you for reaching out. We will get back to you soon.');
                 } else {
                     alert('Message sent successfully!');
                 }
                 
-                // ফর্ম ক্লিয়ার করা
                 document.getElementById('telegramForm').reset();
 
             } catch (error) {
@@ -219,12 +193,10 @@
                     alert('Failed to send message. Please try again.');
                 }
             } finally {
-                // বাটন আগের অবস্থায় ফিরিয়ে আনা
                 btn.innerHTML = originalBtnText;
                 btn.style.pointerEvents = 'auto';
             }
         });
     </script>
-
 </body>
 </html>
