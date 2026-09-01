@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Admin Login - Nexsoftx</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* লগইন বাটন এবং লিংকের হোভার ইফেক্ট */
+        .btn-admin-login:hover { background: #1e293b !important; }
+        .back-link:hover { color: #0f172a !important; }
+    </style>
+</head>
+<body style="background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: sans-serif;">
+
+    <!-- অ্যাডমিন লগইনের ডার্ক স্ক্রিন / কার্ড -->
+    <div class="admin-login-wrapper" style="width: 100%; padding: 20px; box-sizing: border-box;">
+        <div class="admin-login-card" style="max-width: 420px; margin: 0 auto; padding: 40px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center;">
+            
+            <!-- অ্যাডমিন লোগো -->
+            <h2 style="color: #0f172a; margin: 0 0 5px 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -1px;">Nexsoftx</h2>
+            <p style="color: #64748b; margin: 0 0 35px 0; font-weight: 500; font-size: 0.95rem;">Secure Admin Portal</p>
+            
+            <!-- লগইন ফর্ম (JS-এর সাথে কানেক্ট করা হয়েছে) -->
+            <form id="adminLoginForm" class="admin-login-form" style="text-align: left;">
+                
+                <div class="dash-form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 0.9rem;">Admin Email</label>
+                    <input type="email" id="adminEmail" placeholder="admin@nexsoftx.com" required style="width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; box-sizing: border-box; font-size: 1rem;">
+                </div>
+                
+                <div class="dash-form-group" style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 0.9rem;">Master Password</label>
+                    <input type="password" id="adminPassword" placeholder="••••••••" required style="width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; box-sizing: border-box; font-size: 1rem;">
+                </div>
+                
+                <!-- প্রফেশনাল আইকনসহ লগইন বাটন -->
+                <button type="submit" class="btn-admin-login" style="width: 100%; background: #0f172a; color: white; padding: 15px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    Access Panel
+                </button>
+                
+            </form>
+
+            <!-- আইকনসহ ব্যাক লিংক -->
+            <a href="index.html" class="back-link" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 30px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: 0.3s;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Return to Website
+            </a>
+
+        </div>
+    </div>
+
+    <!-- 🚀 অ্যাডমিন প্যানেলের মাস্টার জাভাস্ক্রিপ্ট -->
+    <script type="module" src="admin.js"></script>
+
+</body>
+</html>

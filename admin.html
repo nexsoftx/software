@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Admin - Nexsoftx</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Favicon -->
+    <link rel="icon" href="assets/favicon.png" type="image/png">
+    
+    <!-- ========================================== -->
+    <!-- 🎨 Custom CSS (Dropdown & Button Hovers) -->
+    <!-- ========================================== -->
+    <style>
+        #adminDropdown a:hover { background-color: #f1f5f9; }
+
+        .btn-edit { background: #f0f9ff !important; color: #0284c7 !important; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-right: 8px; }
+        .btn-edit:hover { background: #0284c7 !important; color: #ffffff !important; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2); }
+        
+        .btn-delete { background: #fee2e2 !important; color: #ef4444 !important; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-delete:hover { background: #ef4444 !important; color: #ffffff !important; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="admin-layout">
+        
+        <!-- ========================================== -->
+        <!-- 📌 ১. Sidebar Navigation Menu -->
+        <!-- ========================================== -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Nexsoftx</h2>
+                <span>Enterprise Dashboard</span>
+            </div>
+            <nav class="admin-menu">
+                <a href="#" class="tab-link active" data-target="Dashboard" onclick="openAdminTab('Dashboard')" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    Dashboard Overview
+                </a>
+                
+                <a href="#" class="tab-link" data-target="ManageSoftware" onclick="openAdminTab('ManageSoftware')" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    Manage Software
+                </a>
+                
+                <a href="#" class="tab-link" data-target="Upload" onclick="openAdminTab('Upload')" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Publish Software
+                </a>
+                
+                <a href="#" class="tab-link" data-target="ManageUsers" onclick="openAdminTab('ManageUsers')" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    Manage Users
+                </a>
+                
+                <a href="#" class="tab-link" data-target="Tickets" onclick="openAdminTab('Tickets')" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+                    Support Tickets
+                </a>
+                
+                <a href="#" class="tab-link" data-target="AdminSettings" onclick="openAdminTab('AdminSettings')" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Admin Settings
+                </a>
+                
+                <div style="flex-grow: 1;"></div>
+                
+                <a href="index.html" style="color: #ef4444; margin-bottom: 20px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Exit to Website
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ========================================== -->
+        <!-- 📌 ২. Top Header & Profile Dropdown -->
+        <!-- ========================================== -->
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <div class="admin-search-bar" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" fill="none" stroke="#94a3b8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" placeholder="Search software, users, or tickets..." style="border: none; outline: none; background: transparent; width: 100%;">
+                </div>
+                
+                <div class="admin-profile-top" style="position: relative; display: flex; align-items: center; gap: 20px;">
+                    
+                    <!-- 🔔 নোটিফিকেশন বেল আইকন ও কাউন্ট ব্যাজ -->
+                    <div class="notify-icon" onclick="toggleNotificationDrawer()" style="cursor: pointer; position: relative; padding: 5px;">
+                        <svg width="24" height="24" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span id="notifyBadgeCount" style="display: none; position: absolute; top: 0; right: 0; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; align-items: center; justify-content: center;">0</span>
+                    </div>
+
+                    <!-- 🚀 ডান পাশ থেকে আসা নোটিফিকেশন স্লাইড ড্রয়ার -->
+                    <div id="notificationDrawer" style="position: fixed; top: 0; right: -380px; width: 360px; height: 100vh; background: white; box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 99999; transition: right 0.3s ease; display: flex; flex-direction: column;">
+                        <div style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                            <h3 style="margin: 0; font-size: 1.1rem; color: #0f172a; font-weight: 700;">Admin Notifications</h3>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <button onclick="clearAllNotifications()" style="background: none; border: none; color: #ef4444; font-size: 0.8rem; font-weight: 600; cursor: pointer;">Clear All</button>
+                                <button onclick="toggleNotificationDrawer()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">&times;</button>
+                            </div>
+                        </div>
+                        <div id="notificationListContainer" style="flex-grow: 1; overflow-y: auto; padding: 15px;">
+                            <p style="text-align: center; color: #94a3b8; font-size: 0.9rem; margin-top: 30px;">No new notifications</p>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-dropdown-trigger" onclick="toggleAdminDropdown()" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <span id="adminNameDisplay" style="font-weight: 600; color: #1e293b;">Master Admin</span>
+                        <img src="https://img.icons8.com/color/96/000000/user-male-circle--v1.png" alt="Admin" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <svg width="16" height="16" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+
+                    <div id="adminDropdown" style="display: none; position: absolute; top: 55px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 8px; width: 180px; z-index: 100;">
+                        <a href="#" onclick="openAdminTab('AdminSettings'); toggleAdminDropdown();" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #334155; padding: 10px; border-radius: 8px; transition: 0.2s; font-weight: 500;">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Settings
+                        </a>
+                        <a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #ef4444; padding: 10px; border-radius: 8px; transition: 0.2s; font-weight: 500;">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                
+                <!-- ========================================== -->
+                <!-- 📌 ৩. Dashboard Overview Tab -->
+                <!-- ========================================== -->
+                <div id="Dashboard" class="tab-content active-tab">
+                    <div class="admin-stat-grid">
+                        <div class="admin-stat-card" onclick="openAdminTab('ManageSoftware')">
+                            <div><p>Total Software</p><h3 id="totalSoftwareCount">0</h3></div>
+                            <div class="stat-icon-wrapper icon-blue">
+                                <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="admin-stat-card" onclick="openAdminTab('Dashboard')">
+                            <div><p>Total Downloads</p><h3 id="totalDownloadsCount">0</h3></div>
+                            <div class="stat-icon-wrapper icon-green">
+                                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            </div>
+                        </div>
+                        <div class="admin-stat-card" onclick="openAdminTab('ManageUsers')">
+                            <div><p>Registered Users</p><h3 id="totalUsersCount">0</h3></div>
+                            <div class="stat-icon-wrapper icon-purple">
+                                <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="admin-stat-card" onclick="openAdminTab('Tickets')">
+                            <div><p>Support Tickets</p><h3 id="totalTicketsCount">0</h3></div>
+                            <div class="stat-icon-wrapper icon-orange">
+                                <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-table-wrapper">
+                        <div class="admin-table-header">
+                            <h3>Recently Published Software</h3>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Software Name</th>
+                                    <th>Platform</th>
+                                    <th>Date Published</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentSoftwareList">
+                                <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- 📌 ৪. Publish Software Tab -->
+                <!-- ========================================== -->
+                <div id="Upload" class="tab-content">
+                    <div class="upload-card">
+                        <h2>Publish New Software</h2>
+                        <form id="publishSoftwareForm">
+                            <!-- ১. টাইটেল ও প্ল্যাটফর্ম -->
+                            <div class="form-row">
+                                <div class="dash-form-group">
+                                    <label>Software Title</label>
+                                    <input type="text" id="softTitle" class="admin-input" placeholder="e.g., Adobe Photoshop 2026" required>
+                                </div>
+                                <div class="dash-form-group">
+                                    <label>Platform / OS</label>
+                                    <select id="softPlatform" class="admin-input">
+                                        <option value="Windows">Windows</option>
+                                        <option value="Mac">Mac OS</option>
+                                        <option value="Android">Android</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- ২. ফাইল নেম ও ডেভেলপার -->
+                            <div class="form-row">
+                                <div class="dash-form-group">
+                                    <label>Actual File Name</label>
+                                    <input type="text" id="softFileName" class="admin-input" placeholder="e.g., Wondershare PDFelement Pro 12.exe">
+                                </div>
+                                <div class="dash-form-group">
+                                    <label>Created By (Developer)</label>
+                                    <input type="text" id="softDeveloper" class="admin-input" placeholder="e.g., Wondershare">
+                                </div>
+                            </div>
+
+                            <!-- ৩. অ্যাপ আইকন ও কভার ব্যানার -->
+                            <div class="form-row">
+                                <div class="dash-form-group">
+                                    <label>App Icon URL (Thumbnail)</label>
+                                    <input type="url" id="softIcon" class="admin-input" placeholder="https://example.com/icon.png" required>
+                                    <span class="image-hint">✓ Auto-resizes to 150x150px (Square)</span>
+                                </div>
+                                <div class="dash-form-group">
+                                    <label>Cover Banner URL</label>
+                                    <input type="url" id="softBanner" class="admin-input" placeholder="https://example.com/banner.jpg" required>
+                                    <span class="image-hint">✓ Auto-resizes to 800x400px (Wide)</span>
+                                </div>
+                            </div>
+
+                            <!-- ৪. ভার্সন, সাইজ ও লাইসেন্স -->
+                            <div class="form-row">
+                                <div class="dash-form-group"><label>Version</label><input type="text" id="softVersion" class="admin-input" placeholder="e.g., 12.2.2.4430" required></div>
+                                <div class="dash-form-group"><label>File Size</label><input type="text" id="softSize" class="admin-input" placeholder="e.g., 232 MB" required></div>
+                                <div class="dash-form-group"><label>License Type</label><input type="text" id="softLicense" class="admin-input" placeholder="e.g., Full Version, Freeware"></div>
+                            </div>
+
+                            <!-- ৫. রিলিজ ডেট (নতুন), ভাষা এবং চেঞ্জলগ -->
+                            <div class="form-row">
+                                <div class="dash-form-group"><label>Release Date</label><input type="date" id="softReleaseDate" class="admin-input"></div>
+                                <div class="dash-form-group"><label>Languages</label><input type="text" id="softLanguages" class="admin-input" placeholder="e.g., English, Multilingual"></div>
+                                <div class="dash-form-group"><label>Change Log Link</label><input type="url" id="softChangelog" class="admin-input" placeholder="https://example.com/whats-new"></div>
+                            </div>
+
+                            <!-- ৬. ট্যাগ, আপলোডার এবং ডাউনলোড লিংক -->
+                            <div class="form-row">
+                                <div class="dash-form-group"><label>Tags (Comma separated)</label><input type="text" id="softTags" class="admin-input" placeholder="e.g., PDF Editor, OCR"></div>
+                                <div class="dash-form-group"><label>Uploaded By</label><input type="text" id="softUploadedBy" class="admin-input" placeholder="e.g., Nexsoftx Team"></div>
+                                <div class="dash-form-group"><label>Direct Download Link</label><input type="url" id="softLink" class="admin-input" placeholder="https://drive.google.com/..." required></div>
+                            </div>
+
+                            <!-- শর্ট ডেসক্রিপশন -->
+                            <div class="dash-form-group" style="margin-bottom: 25px;">
+                                <label>Short Description</label>
+                                <textarea id="softShortDesc" class="admin-textarea" rows="2" placeholder="Brief 1-2 sentence overview..." required></textarea>
+                            </div>
+                            
+                            <!-- ফুল ডেসক্রিপশন (রিচ টেক্সট এডিটর) -->
+                            <div class="dash-form-group">
+                                <label>Full Documentation & Features</label>
+                                <div class="rich-text-editor">
+                                    <div class="editor-toolbar">
+                                        <select class="editor-btn" onchange="formatDoc('formatBlock', this.value)">
+                                            <option value="" selected disabled>Format</option><option value="H1">Heading 1</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option><option value="P">Paragraph</option>
+                                        </select>
+                                        <select class="editor-btn" onchange="formatDoc('fontName', this.value)">
+                                            <option value="" selected disabled>Font</option><option value="Arial">Arial</option><option value="Courier New">Courier</option>
+                                        </select>
+                                        <select class="editor-btn" onchange="formatDoc('fontSize', this.value)">
+                                            <option value="" selected disabled>Size</option><option value="1">Small</option><option value="3">Normal</option><option value="5">Large</option><option value="7">Huge</option>
+                                        </select>
+                                        <input type="color" class="editor-btn" onchange="formatDoc('foreColor', this.value)" title="Text Color" style="padding: 0; width: 34px; height: 34px; cursor: pointer; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                        <button type="button" class="editor-btn" onclick="formatDoc('bold')" title="Bold"><b>B</b></button>
+                                        <button type="button" class="editor-btn" onclick="formatDoc('italic')" title="Italic"><i>I</i></button>
+                                        <button type="button" class="editor-btn" onclick="formatDoc('underline')" title="Underline"><u>U</u></button>
+                                        <button type="button" class="editor-btn" onclick="formatDoc('justifyLeft')" title="Align Left"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16"></path></svg></button>
+                                        <button type="button" class="editor-btn" onclick="formatDoc('insertOrderedList')" title="Number List">1.</button>
+                                        <button type="button" class="editor-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet List">•</button>
+                                        <button type="button" class="editor-btn" onclick="addLink()" style="display: flex; align-items: center; gap: 4px;" title="Highlight text first, then click to add link"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> Link</button>
+                                        <button type="button" class="editor-btn" onclick="formatDoc('removeFormat')" style="color: #ef4444;" title="Clear Formatting">Clear</button>
+                                    </div>
+                                    <div class="editor-content" id="fullDescription" contenteditable="true" placeholder="Write full installation guide and features here..."></div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-publish" style="margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 10.5L21 3m-6 18l-3-9-9-3 18-9-9 18z"></path></svg>
+                                Publish to Live Site
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- 📌 ৫. Manage Software Tab -->
+                <!-- ========================================== -->
+                <div id="ManageSoftware" class="tab-content">
+                    <div class="admin-table-wrapper" style="margin-top: 0;">
+                        <div class="admin-table-header">
+                            <h3 style="margin:0;">Manage Published Software</h3>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Software Name</th>
+                                    <th>Platform</th>
+                                    <th>Date Published</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manageSoftwareList">
+                                <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">Loading software data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- 📌 ৬. Manage Users Tab -->
+                <!-- ========================================== -->
+                <div id="ManageUsers" class="tab-content">
+                    <div class="admin-table-wrapper" style="margin-top: 0;">
+                        <div class="admin-table-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin:0;">Manage Registered Users</h3>
+                            <span style="font-size: 0.85rem; color: #64748b;">30 users per page</span>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User Name / Email</th>
+                                    <th>Account Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manageUsersList">
+                                <tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 20px;">Loading user data...</td></tr>
+                            </tbody>
+                        </table>
+                        <div id="userPagination" style="padding: 15px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc;"></div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- 📌 ৭. Support Tickets Tab (Max 20 per Page) -->
+                <!-- ========================================== -->
+                <div id="Tickets" class="tab-content">
+                    <div class="admin-table-wrapper" style="margin-top: 0;">
+                        <div class="admin-table-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin:0;">Manage Support Tickets</h3>
+                            <span style="font-size: 0.85rem; color: #64748b;">Max 20 tickets per page</span>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Subject & Message</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manageTicketsList">
+                                <tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 20px;">Loading support tickets...</td></tr>
+                            </tbody>
+                        </table>
+                        <div id="ticketPagination" style="padding: 15px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc;"></div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+<!-- 📌 ৮. Admin Settings Tab (Advanced UI) -->
+<!-- ========================================== -->
+<div id="AdminSettings" class="tab-content">
+    
+    <!-- 🟢 নিজের প্রোফাইল আপডেট কার্ড -->
+    <div class="upload-card" style="margin-bottom: 35px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;">
+            <div>
+                <h2 style="margin: 0; font-size: 1.3rem; color: #0f172a; font-weight: 700;">My Profile Settings</h2>
+                <p style="color: #64748b; font-size: 0.88rem; margin-top: 4px;">Manage your account credentials and security preferences.</p>
+            </div>
+            <span class="admin-badge" id="currentAdminRoleBadge" style="background: #ecfdf5; color: #10b981; font-size: 0.85rem; padding: 6px 14px; border-radius: 20px; font-weight: 700;">Admin</span>
+        </div>
+        
+        <form id="adminProfileUpdateForm">
+            <div class="form-row" style="margin-bottom: 20px;">
+                <div class="dash-form-group">
+                    <label style="font-weight: 600; color: #334155; margin-bottom: 8px; display: block;">Display Name</label>
+                    <input type="text" id="adminUpdateName" class="admin-input" required style="border-radius: 10px; padding: 12px 16px;">
+                </div>
+                <div class="dash-form-group">
+                    <label style="font-weight: 600; color: #334155; margin-bottom: 8px; display: block;">Email Address (Login ID)</label>
+                    <input type="email" id="adminUpdateEmail" class="admin-input" disabled style="background: #f8fafc; cursor: not-allowed; color: #94a3b8; border-radius: 10px; padding: 12px 16px;">
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom: 25px;">
+                <div class="dash-form-group">
+                    <label style="font-weight: 600; color: #334155; margin-bottom: 8px; display: block;">New Password</label>
+                    <input type="password" id="adminUpdatePassword" class="admin-input" placeholder="••••••••" minlength="6" style="border-radius: 10px; padding: 12px 16px;">
+                    <span style="font-size: 0.78rem; color: #94a3b8; margin-top: 5px; display: block;">Leave blank if you do not want to change your password.</span>
+                </div>
+            </div>
+            <button type="submit" class="btn-publish" style="width: auto; padding: 12px 28px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 10px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">Save Changes</button>
+        </form>
+    </div>
+
+    <!-- 🟢 সাব-অ্যাডমিন ম্যানেজমেন্ট কার্ড (কেবল মাস্টার অ্যাডমিনের জন্য) -->
+    <div class="upload-card" id="masterAdminSection" style="display: none; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
+        <div style="margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;">
+            <h2 style="margin: 0; font-size: 1.3rem; color: #0f172a; font-weight: 700;">Manage Sub-Admins</h2>
+            <p style="color: #64748b; font-size: 0.88rem; margin-top: 4px;">Add or remove secondary administrators with system access.</p>
+        </div>
+        
+        <form id="createSubAdminForm" style="background: #f8fafc; padding: 25px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+            <h4 style="margin-bottom: 15px; color: #0f172a; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Add New Sub-Admin
+            </h4>
+            <div class="form-row" style="margin-bottom: 15px;">
+                <div class="dash-form-group"><label style="font-weight: 600; color: #334155; margin-bottom: 6px; display: block; font-size: 0.88rem;">Admin Name</label><input type="text" id="subAdminName" class="admin-input" placeholder="e.g., Tawsif Ahamed" required style="border-radius: 8px;"></div>
+                <div class="dash-form-group"><label style="font-weight: 600; color: #334155; margin-bottom: 6px; display: block; font-size: 0.88rem;">Email Address</label><input type="email" id="subAdminEmail" class="admin-input" placeholder="subadmin@nexsoftx.com" required style="border-radius: 8px;"></div>
+                <div class="dash-form-group"><label style="font-weight: 600; color: #334155; margin-bottom: 6px; display: block; font-size: 0.88rem;">Temporary Password</label><input type="password" id="subAdminPassword" class="admin-input" placeholder="••••••••" required minlength="6" style="border-radius: 8px;"></div>
+            </div>
+            <button type="submit" class="btn-publish" style="margin-top: 5px; width: auto; padding: 10px 22px; display: flex; align-items: center; gap: 8px; border-radius: 8px; font-size: 0.95rem;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                Create Admin
+            </button>
+        </form>
+
+        <div class="admin-table-wrapper" style="box-shadow: none; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <table class="admin-table">
+                <thead><tr><th>Admin Name</th><th>Email Address</th><th>Role</th><th>Actions</th></tr></thead>
+                <tbody id="subAdminTableList">
+                    <tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 20px;">Loading admins...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+    <!-- ========================================== -->
+    <!-- 📌 ৯. JavaScript Code (UI Interactions) -->
+    <!-- ========================================== -->
+    <script>
+        // Tab switching logic
+        function openAdminTab(tabName) {
+            let tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active-tab");
+            }
+            let tablinks = document.getElementsByClassName("tab-link");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            let activeLink = document.querySelector(`.tab-link[data-target="${tabName}"]`);
+            if(activeLink) activeLink.classList.add("active");
+        }
+
+        // Dropdown toggle logic
+        function toggleAdminDropdown() {
+            const dropdown = document.getElementById('adminDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close dropdown if clicked outside
+        window.onclick = function(event) {
+            if (!event.target.closest('.profile-dropdown-trigger')) {
+                const dropdown = document.getElementById('adminDropdown');
+                if (dropdown && dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                }
+            }
+        }
+
+        // Ultimate Text Editor Functions
+        function formatDoc(cmd, value = null) { document.execCommand(cmd, false, value); }
+        function addLink() {
+            const url = prompt('Insert Link URL (e.g., https://google.com):');
+            if(url) document.execCommand('createLink', false, url);
+        }
+    </script>
+    
+    <!-- ========================================== -->
+    <!-- 🚀 Master JS Backend File Link -->
+    <!-- ========================================== -->
+    <script type="module" src="admin.js"></script>
+
+</body>
+</html>
