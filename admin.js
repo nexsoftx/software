@@ -91,7 +91,8 @@ window.showAdminModal = function(type, title, message, confirmCallback = null) {
 const MASTER_ADMIN_EMAIL = "admin@nexsoftx.com"; 
 
 onAuthStateChanged(auth, async (user) => {
-    const isAdminLoginPage = window.location.pathname.includes('admin-login.html');
+    const currentPath = window.location.pathname;
+    const isAdminLoginPage = currentPath.includes('admin-login');
 
     if (user) {
         const isMaster = user.email === MASTER_ADMIN_EMAIL;
@@ -110,13 +111,10 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         if (!isMaster && !isSubAdmin) {
-            if (window.location.pathname.includes('admin')) {
-                await signOut(auth);
+            if (currentPath.includes('admin')) {
                 document.body.style.display = 'none'; 
-                showAdminModal('security', 'Access Denied!', 'You do not have administrative privileges.', () => {
-                    window.location.href = "index.html";
-                });
-                setTimeout(() => { window.location.href = "index.html"; }, 3000);
+                await signOut(auth);
+                window.location.href = "index.html";
             }
             return;
         }
@@ -134,7 +132,9 @@ onAuthStateChanged(auth, async (user) => {
             window.loadAdminSettingsData(user);
         }
     } else {
-        if (window.location.pathname.includes('admin.html') && !isAdminLoginPage) {
+        // 🟢 ফিক্স: 'admin.html' এর বদলে 'admin' চেক করা হয়েছে এবং UI হাইড করা হয়েছে
+        if (currentPath.includes('admin') && !isAdminLoginPage) {
+            document.body.style.display = 'none'; 
             window.location.href = "admin-login.html";
         }
     }
@@ -941,3 +941,22 @@ window.deleteSubAdmin = async function(docId) {
         }
     });
 }
+
+// ==========================================
+// 🚪 ১৪. Secure Admin Logout
+// ==========================================
+const handleAdminLogout = async (e) => {
+    e.preventDefault();
+    try {
+        await signOut(auth); // ফায়ারবেস থেকে সম্পূর্ণ লগআউট
+        window.location.href = "admin-login.html"; // লগইন পেজে পাঠিয়ে দেবে
+    } catch (error) {
+        console.error("Logout Error:", error);
+    }
+};
+
+const sidebarLogoutBtn = document.getElementById('adminSidebarLogout');
+const dropdownLogoutBtn = document.getElementById('adminDropdownLogout');
+
+if (sidebarLogoutBtn) sidebarLogoutBtn.addEventListener('click', handleAdminLogout);
+if (dropdownLogoutBtn) dropdownLogoutBtn.addEventListener('click', handleAdminLogout);
