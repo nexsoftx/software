@@ -85,32 +85,42 @@ window.showCustomModal = function(type, title, message, confirmCallback = null) 
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // 🚀 BANNED USER CHECK
         try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().status === 'banned') {
-                await signOut(auth);
-                showCustomModal('error', 'Account Suspended', 'Your account has been banned by the Administrator. You cannot access this portal.', () => {
-                    window.location.href = "login.html";
-                });
-                if(document.getElementById('guestMenu')) document.getElementById('guestMenu').style.display = 'flex';
-                if(document.getElementById('userMenu')) document.getElementById('userMenu').style.display = 'none';
-                return; // ব্যান হলে বাকি UI লোড হবে না
+            // 🟢 ডাটাবেস থেকে ইউজারের লেটেস্ট নাম ও ইমেইল ফেচ করা হচ্ছে
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                
+                // 🚀 BANNED USER CHECK
+                if (userData.status === 'banned') {
+                    await signOut(auth);
+                    showCustomModal('error', 'Account Suspended', 'Your account has been banned by the Administrator. You cannot access this portal.', () => {
+                        window.location.href = "login.html";
+                    });
+                    if(document.getElementById('guestMenu')) document.getElementById('guestMenu').style.display = 'flex';
+                    if(document.getElementById('userMenu')) document.getElementById('userMenu').style.display = 'none';
+                    return; 
+                }
+
+                // 🟢 অথেনটিকেশনের বদলে ডাটাবেস থেকে পাওয়া নাম ও ইমেইল সেট করা হচ্ছে
+                const finalName = userData.name || user.displayName || "User";
+                const finalEmail = userData.email || user.email;
+
+                if(document.getElementById('guestMenu')) document.getElementById('guestMenu').style.display = 'none';
+                if(document.getElementById('userMenu')) document.getElementById('userMenu').style.display = 'block';
+                
+                if(document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = finalName;
+                if(document.getElementById('dropdownEmail')) document.getElementById('dropdownEmail').innerText = finalEmail;
+                if(document.getElementById('profileName')) document.getElementById('profileName').innerText = finalName;
+                if(document.getElementById('profileEmail')) document.getElementById('profileEmail').innerText = finalEmail;
+                
+                if(document.getElementById('welcomeName')) document.getElementById('welcomeName').innerText = `Welcome back, ${finalName.split(' ')[0]}!`;
             }
         } catch (error) {
-            console.error("Error checking ban status:", error);
+            console.error("Error fetching user data:", error);
         }
-
-        if(document.getElementById('guestMenu')) document.getElementById('guestMenu').style.display = 'none';
-        if(document.getElementById('userMenu')) document.getElementById('userMenu').style.display = 'block';
-        
-        if(document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = user.displayName || "User";
-        if(document.getElementById('dropdownEmail')) document.getElementById('dropdownEmail').innerText = user.email;
-        if(document.getElementById('profileName')) document.getElementById('profileName').innerText = user.displayName || "User";
-        if(document.getElementById('profileEmail')) document.getElementById('profileEmail').innerText = user.email;
-        
-        // ✨ ইমোজি মুছে ফেলা হয়েছে
-        if(document.getElementById('welcomeName')) document.getElementById('welcomeName').innerText = `Welcome back, ${user.displayName ? user.displayName.split(' ')[0] : 'User'}!`;
         
         if(document.getElementById('savedSoftwareList')) {
             window.loadUserFavorites(user.uid);
@@ -126,7 +136,6 @@ onAuthStateChanged(auth, async (user) => {
             
             getDoc(doc(db, "users", user.uid, "favorites", softwareId)).then((docSnap) => {
                 if (docSnap.exists()) {
-                    // ✅ ইমোজির বদলে SVG আইকন
                     favBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 5px; margin-top: -2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Already Saved`;
                     favBtn.style.background = '#f8fafc';
                     favBtn.style.color = '#94a3b8';
@@ -140,8 +149,8 @@ onAuthStateChanged(auth, async (user) => {
         if(document.getElementById('guestMenu')) document.getElementById('guestMenu').style.display = 'flex';
         if(document.getElementById('userMenu')) document.getElementById('userMenu').style.display = 'none';
         
-        if(document.getElementById('updateNameInput')) document.getElementById('updateNameInput').value = user?.displayName || "";
-        if(document.getElementById('updateEmailInput')) document.getElementById('updateEmailInput').value = user?.email || "";
+        if(document.getElementById('updateNameInput')) document.getElementById('updateNameInput').value = "";
+        if(document.getElementById('updateEmailInput')) document.getElementById('updateEmailInput').value = "";
         
         if (window.location.pathname.includes('profile.html')) {
             window.location.href = "login.html";
@@ -423,15 +432,16 @@ if (profileUpdateForm) {
                 
                 if (newName && newName !== currentUser.displayName) {
                     await updateProfile(currentUser, { displayName: newName });
-                    if(document.getElementById('profileName')) document.getElementById('profileName').innerText = newName;
+                    await updateDoc(doc(db, "users", currentUser.uid), { name: newName }); // 🟢 ডাটাবেসেও আপডেট করা হচ্ছে
                     
-                    // ✨ ইমোজি মুছে ফেলা হয়েছে
+                    if(document.getElementById('profileName')) document.getElementById('profileName').innerText = newName;
                     if(document.getElementById('welcomeName')) document.getElementById('welcomeName').innerText = `Welcome back, ${newName.split(' ')[0]}!`;
                     if(document.getElementById('dropdownName')) document.getElementById('dropdownName').innerText = newName;
                 }
                 
                 if (newEmail && newEmail !== currentUser.email) {
                     await verifyBeforeUpdateEmail(currentUser, newEmail);
+                    await updateDoc(doc(db, "users", currentUser.uid), { email: newEmail }); // 🟢 ডাটাবেসেও আপডেট করা হচ্ছে
                     isEmailVerificationSent = true;
                 }
                 
