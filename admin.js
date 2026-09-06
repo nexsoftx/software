@@ -969,3 +969,37 @@ const dropdownLogoutBtn = document.getElementById('adminDropdownLogout');
 
 if (sidebarLogoutBtn) sidebarLogoutBtn.addEventListener('click', handleAdminLogout);
 if (dropdownLogoutBtn) dropdownLogoutBtn.addEventListener('click', handleAdminLogout);
+
+// ==========================================
+// 🔍 ১৫. Global Admin Search Functionality
+// ==========================================
+const adminSearchInput = document.querySelector('.admin-search-bar input');
+
+if (adminSearchInput) {
+    adminSearchInput.addEventListener('input', function(e) {
+        // ইউজারের টাইপ করা টেক্সট ছোট হাতের অক্ষরে কনভার্ট করা
+        const searchTerm = e.target.value.toLowerCase().trim();
+        
+        // ড্যাশবোর্ডের সব ডাটা টেবিল সিলেক্ট করা
+        const tableBodies = document.querySelectorAll('.admin-table tbody');
+        
+        tableBodies.forEach(tbody => {
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                // "Loading..." বা ফাঁকা মেসেজ ইগনোর করার লজিক
+                if (row.cells.length <= 1) return;
+                
+                // পুরো রো-এর টেক্সট একসাথে চেক করা
+                const rowText = row.innerText.toLowerCase();
+                
+                // যদি সার্চ টার্ম মিলে যায় তবে রো-টি দেখাবে, নাহলে লুকিয়ে ফেলবে
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+}
