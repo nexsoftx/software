@@ -971,35 +971,31 @@ if (sidebarLogoutBtn) sidebarLogoutBtn.addEventListener('click', handleAdminLogo
 if (dropdownLogoutBtn) dropdownLogoutBtn.addEventListener('click', handleAdminLogout);
 
 // ==========================================
-// 🔍 ১৫. Global Admin Search Functionality
+// 🔍 ১৫. Global Admin Search Functionality (100% Fixed)
 // ==========================================
-const adminSearchInput = document.querySelector('.admin-search-bar input');
-
-if (adminSearchInput) {
-    adminSearchInput.addEventListener('input', function(e) {
-        // ইউজারের টাইপ করা টেক্সট ছোট হাতের অক্ষরে কনভার্ট করা
+document.addEventListener('input', function(e) {
+    // চেক করবে ইউজার অ্যাডমিন সার্চ বারে টাইপ করছে কি না
+    const isSearchBar = e.target.closest('.admin-search-bar');
+    
+    if (isSearchBar) {
         const searchTerm = e.target.value.toLowerCase().trim();
         
-        // ড্যাশবোর্ডের সব ডাটা টেবিল সিলেক্ট করা
-        const tableBodies = document.querySelectorAll('.admin-table tbody');
+        // ড্যাশবোর্ডের সব ডাটা টেবিলের সারিগুলো (rows) একসাথে সিলেক্ট করা
+        const allRows = document.querySelectorAll('.admin-table tbody tr');
         
-        tableBodies.forEach(tbody => {
-            const rows = tbody.querySelectorAll('tr');
+        allRows.forEach(row => {
+            // "Loading..." বা ফাঁকা মেসেজের সারিগুলো ইগনোর করা
+            if (row.cells.length <= 1) return;
             
-            rows.forEach(row => {
-                // "Loading..." বা ফাঁকা মেসেজ ইগনোর করার লজিক
-                if (row.cells.length <= 1) return;
-                
-                // পুরো রো-এর টেক্সট একসাথে চেক করা
-                const rowText = row.innerText.toLowerCase();
-                
-                // যদি সার্চ টার্ম মিলে যায় তবে রো-টি দেখাবে, নাহলে লুকিয়ে ফেলবে
-                if (rowText.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            // সারির ভেতরের সব টেক্সট একসাথে চেক করা
+            const rowText = row.textContent.toLowerCase();
+            
+            // সার্চ টার্ম মিললে রো দেখাবে, নাহলে লুকিয়ে ফেলবে
+            if (rowText.includes(searchTerm)) {
+                row.style.display = ''; 
+            } else {
+                row.style.display = 'none'; 
+            }
         });
-    });
-}
+    }
+});
