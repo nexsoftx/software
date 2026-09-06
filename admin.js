@@ -88,12 +88,17 @@ window.showAdminModal = function(type, title, message, confirmCallback = null) {
 // -----------------------------------------------------
 // 🛡️ ২. Admin Security Lock (Master & Sub-Admin)
 // -----------------------------------------------------
+const currentPath = window.location.pathname;
+const isAdminLoginPage = currentPath.includes('admin-login');
+
+// 🟢 ম্যাজিক ফিক্স: পেজ লোড হওয়ার আগেই UI হাইড করে রাখা (যাতে কেউ লিংক দিয়ে ঢুকলে ব্লিঙ্ক না করে)
+if (currentPath.includes('admin') && !isAdminLoginPage) {
+    document.documentElement.style.display = 'none';
+}
+
 const MASTER_ADMIN_EMAIL = "admin@nexsoftx.com"; 
 
 onAuthStateChanged(auth, async (user) => {
-    const currentPath = window.location.pathname;
-    const isAdminLoginPage = currentPath.includes('admin-login');
-
     if (user) {
         const isMaster = user.email === MASTER_ADMIN_EMAIL;
         let isSubAdmin = false;
@@ -110,18 +115,21 @@ onAuthStateChanged(auth, async (user) => {
             }
         }
 
+        // যদি অ্যাডমিন না হয়, তবে কিক করে বের করে দেবে
         if (!isMaster && !isSubAdmin) {
             if (currentPath.includes('admin')) {
-                document.body.style.display = 'none'; 
                 await signOut(auth);
-                window.location.href = "index.html";
+                window.location.href = "login.html"; 
             }
             return;
         }
 
+        // অ্যাডমিন হলে পেজ শো করবে
         if (isAdminLoginPage) {
             window.location.href = "admin.html";
         } else {
+            document.documentElement.style.display = ''; // 🟢 অথেনটিকেশন সফল হলে তবেই UI শো করবে
+            
             if(document.getElementById('adminNameDisplay')) {
                 document.getElementById('adminNameDisplay').innerText = user.displayName || (isMaster ? "Master Admin" : "Sub Admin");
             }
@@ -132,10 +140,11 @@ onAuthStateChanged(auth, async (user) => {
             window.loadAdminSettingsData(user);
         }
     } else {
-        // 🟢 ফিক্স: 'admin.html' এর বদলে 'admin' চেক করা হয়েছে এবং UI হাইড করা হয়েছে
+        // কেউ লগইন ছাড়া ঢুকতে চাইলে সাথে সাথে লগইন পেজে পাঠাবে
         if (currentPath.includes('admin') && !isAdminLoginPage) {
-            document.body.style.display = 'none'; 
             window.location.href = "admin-login.html";
+        } else {
+            document.documentElement.style.display = ''; // অ্যাডমিন লগইন পেজের জন্য UI শো করবে
         }
     }
 });
@@ -948,8 +957,8 @@ window.deleteSubAdmin = async function(docId) {
 const handleAdminLogout = async (e) => {
     e.preventDefault();
     try {
-        await signOut(auth); // ফায়ারবেস থেকে সম্পূর্ণ লগআউট
-        window.location.href = "admin-login.html"; // লগইন পেজে পাঠিয়ে দেবে
+        await signOut(auth); // 🟢 ফায়ারবেস থেকে সিস্টেম পুরোপুরি লগআউট করে দেবে
+        window.location.href = "admin-login.html"; // 🟢 লগআউট করে সরাসরি অ্যাডমিন লগইন পেজে পাঠাবে
     } catch (error) {
         console.error("Logout Error:", error);
     }
