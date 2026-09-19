@@ -20,7 +20,7 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 // ==========================================
-// ২. 🎨 Custom UI Modal Function
+// ২. 🎨 Custom UI Modal Function (Animated SVG)
 // ==========================================
 window.showCustomModal = function(type, title, message, confirmCallback = null) {
     const existingModal = document.getElementById('customModal');
@@ -29,22 +29,34 @@ window.showCustomModal = function(type, title, message, confirmCallback = null) 
     let iconSvg = '';
     let iconBgClass = '';
     let btnClass = 'modal-btn-confirm';
-    let btnText = 'OK, Got it!';
+    let btnText = 'OK';
     let isConfirm = false;
 
     if (type === 'success') {
         iconBgClass = 'icon-bg-success';
-        iconSvg = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-    } else if (type === 'confirm' || type === 'warning') {
+        iconSvg = `
+            <svg class="modal-svg-icon" viewBox="0 0 52 52">
+                <circle class="modal-svg-circle" cx="26" cy="26" r="23" fill="none"/>
+                <path class="modal-svg-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>`;
+    } else if (type === 'confirm' || type === 'warning' || type === 'security') {
         isConfirm = type === 'confirm';
         iconBgClass = 'icon-bg-warning';
         btnClass = isConfirm ? 'modal-btn-danger' : 'modal-btn-confirm';
-        btnText = isConfirm ? 'Yes, Remove' : 'OK';
-        iconSvg = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+        btnText = isConfirm ? 'Yes, Confirm' : 'OK';
+        iconSvg = `
+            <svg class="modal-svg-icon" viewBox="0 0 52 52">
+                <circle class="modal-svg-circle" cx="26" cy="26" r="23" fill="none"/>
+                <path class="modal-svg-exclamation" fill="none" d="M26 15v14m0 6v2"/>
+            </svg>`;
     } else if (type === 'error') {
         iconBgClass = 'icon-bg-error';
         btnClass = 'modal-btn-danger';
-        iconSvg = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+        iconSvg = `
+            <svg class="modal-svg-icon" viewBox="0 0 52 52">
+                <circle class="modal-svg-circle" cx="26" cy="26" r="23" fill="none"/>
+                <path class="modal-svg-cross" fill="none" d="M17 17l18 18M35 17L17 35"/>
+            </svg>`;
     }
 
     const modalHTML = `
@@ -64,36 +76,42 @@ window.showCustomModal = function(type, title, message, confirmCallback = null) 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     const modal = document.getElementById('customModal');
     
-    setTimeout(() => modal.classList.add('show'), 10);
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+
+    const closeModal = (callback) => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+            if (callback) callback();
+        }, 250);
+    };
 
     document.getElementById('modalConfirmBtn').addEventListener('click', () => {
-        modal.classList.remove('show');
-        setTimeout(() => modal.remove(), 300);
-        if (confirmCallback) confirmCallback();
+        closeModal(confirmCallback);
     });
 
     if (isConfirm) {
         document.getElementById('modalCancelBtn').addEventListener('click', () => {
-            modal.classList.remove('show');
-            setTimeout(() => modal.remove(), 300);
+            closeModal();
         });
     }
-}
+};
 
 // ==========================================
-// ৩. Global Authentication State
+// ৩. Global Authentication State (সম্পূর্ণ সেকশন)
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
-            // 🟢 ডাটাবেস থেকে ইউজারের লেটেস্ট নাম ও ইমেইল ফেচ করা হচ্ছে
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
             
             if (userDoc.exists()) {
                 const userData = userDoc.data();
                 
-                // 🚀 BANNED USER CHECK
+                // BANNED USER CHECK
                 if (userData.status === 'banned') {
                     await signOut(auth);
                     showCustomModal('error', 'Account Suspended', 'Your account has been banned by the Administrator. You cannot access this portal.', () => {
@@ -104,7 +122,6 @@ onAuthStateChanged(auth, async (user) => {
                     return; 
                 }
 
-                // 🟢 অথেনটিকেশনের বদলে ডাটাবেস থেকে পাওয়া নাম ও ইমেইল সেট করা হচ্ছে
                 const finalName = userData.name || user.displayName || "User";
                 const finalEmail = userData.email || user.email;
 
@@ -117,11 +134,16 @@ onAuthStateChanged(auth, async (user) => {
                 if(document.getElementById('profileEmail')) document.getElementById('profileEmail').innerText = finalEmail;
                 
                 if(document.getElementById('welcomeName')) document.getElementById('welcomeName').innerText = `Welcome back, ${finalName.split(' ')[0]}!`;
+
+                if(document.getElementById('totalDownloadsCount')) {
+                    document.getElementById('totalDownloadsCount').innerText = userData.totalDownloads || 0;
+                }
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
         }
         
+        // ড্যাশবোর্ড ডেটা লোড
         if(document.getElementById('savedSoftwareList')) {
             window.loadUserFavorites(user.uid);
         }
@@ -129,23 +151,15 @@ onAuthStateChanged(auth, async (user) => {
             window.loadUserTickets(user.uid);
         }
 
-        const favBtn = document.getElementById('favoriteBtn');
-        if(favBtn) {
-            const softwareName = favBtn.getAttribute('data-name') || "Saved Software";
-            const softwareId = softwareName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            
-            getDoc(doc(db, "users", user.uid, "favorites", softwareId)).then((docSnap) => {
-                if (docSnap.exists()) {
-                    favBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 5px; margin-top: -2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Already Saved`;
-                    favBtn.style.background = '#f8fafc';
-                    favBtn.style.color = '#94a3b8';
-                    favBtn.style.border = '1px solid #e2e8f0';
-                    favBtn.style.pointerEvents = 'none';
-                    favBtn.style.cursor = 'not-allowed';
-                }
-            });
+        // প্রফেশনাল ফেভারিট সিঙ্ক
+        if (window.syncUserFavorites) {
+            window.syncUserFavorites(user.uid);
         }
+
     } else {
+        // লগআউট থাকলে ক্যাশ ক্লিয়ার
+        localStorage.removeItem('nexsoftx_user_favs');
+
         if(document.getElementById('guestMenu')) document.getElementById('guestMenu').style.display = 'flex';
         if(document.getElementById('userMenu')) document.getElementById('userMenu').style.display = 'none';
         
@@ -237,55 +251,122 @@ if (googleLoginBtn) {
 }
 
 // ==========================================
-// ৫. Save to Favorites (details.html)
+// ৫. Professional Favorite Toggle System (সম্পূর্ণ সেকশন)
 // ==========================================
+
+// --- ৫.১: বাটন রেন্ডারার ফাংশন ---
+window.renderFavoriteBtnState = function(isSaved) {
+    const favBtn = document.getElementById('favoriteBtn');
+    if (!favBtn) return;
+
+    if (isSaved) {
+        favBtn.setAttribute('data-saved', 'true');
+        favBtn.innerHTML = `<svg width="18" height="18" fill="#10b981" stroke="#10b981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg> <span>Saved in Favorites</span>`;
+        favBtn.style.background = '#ecfdf5';
+        favBtn.style.color = '#10b981';
+        favBtn.style.borderColor = '#a7f3d0';
+    } else {
+        favBtn.setAttribute('data-saved', 'false');
+        favBtn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg> <span>Add to Favorite</span>`;
+        favBtn.style.background = '#f8fafc';
+        favBtn.style.color = '#009640';
+        favBtn.style.borderColor = '#e2e8f0';
+    }
+};
+
+// --- ৫.২: ইউজারের ফেভারিট ডেটাবেস ও ক্যাশে সিঙ্ক করা ---
+window.syncUserFavorites = async function(userId) {
+    if (!userId) {
+        localStorage.removeItem('nexsoftx_user_favs');
+        return;
+    }
+    try {
+        const querySnapshot = await getDocs(collection(db, "users", userId, "favorites"));
+        const favIds = [];
+        querySnapshot.forEach(docSnap => favIds.push(docSnap.id));
+        localStorage.setItem('nexsoftx_user_favs', JSON.stringify(favIds));
+
+        // বর্তমান পেজের বাটনের সাথে মিলানো
+        const currentSoftwareId = new URLSearchParams(window.location.search).get('id');
+        if (currentSoftwareId && document.getElementById('favoriteBtn')) {
+            window.renderFavoriteBtnState(favIds.includes(currentSoftwareId));
+        }
+    } catch (err) {
+        console.error("Favorite sync error:", err);
+    }
+};
+
+// --- ৫.৩: ফেভারিট টগল ক্লিক হ্যান্ডলার (Save ও Remove একসাথে) ---
 document.addEventListener('click', async (e) => {
-    // ফেভারিট বাটনে ক্লিক করা হলে
     const favBtn = e.target.closest('#favoriteBtn');
     if (favBtn) {
         e.preventDefault();
         const currentUser = auth.currentUser;
         
         if (!currentUser) {
-            showCustomModal('warning', 'Login Required', 'Please sign in first to save software to your list!', () => {
+            showCustomModal('warning', 'Login Required', 'Please sign in to manage your favorite software list.', () => {
                 window.location.href = "login.html";
             });
             return;
         }
-        
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const softwareId = urlParams.get('id');
+        const softwareName = favBtn.getAttribute('data-name') || document.getElementById('detTitle')?.innerText || "Software";
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadLink = downloadBtn ? downloadBtn.getAttribute('href') : '#';
+
+        if (!softwareId) return;
+
+        const isCurrentlySaved = favBtn.getAttribute('data-saved') === 'true';
+        let favs = [];
         try {
-            // URL থেকে অরিজিনাল আইডি এবং বাটন থেকে নাম ও লিংক নেওয়া
-            const urlParams = new URLSearchParams(window.location.search);
-            const softwareId = urlParams.get('id');
-            const softwareName = favBtn.getAttribute('data-name');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const downloadLink = downloadBtn ? downloadBtn.getAttribute('href') : '#';
+            favs = JSON.parse(localStorage.getItem('nexsoftx_user_favs') || '[]');
+        } catch(err) { favs = []; }
 
-            if (!softwareId || !softwareName) return;
+        if (isCurrentlySaved) {
+            // ১. রিমুভ টগল (Optimistic UI)
+            window.renderFavoriteBtnState(false);
+            favs = favs.filter(id => id !== softwareId);
+            localStorage.setItem('nexsoftx_user_favs', JSON.stringify(favs));
 
-            // ইউজারের ফায়ারবেস ফেভারিট লিস্টে সেভ করা (সঠিক আইডি ও লিংকসহ)
-            await setDoc(doc(db, "users", currentUser.uid, "favorites", softwareId), {
-                name: softwareName,
-                link: downloadLink, // অরিজিনাল ডাউনলোড লিংক সেভ করা হচ্ছে
-                savedAt: new Date().toISOString()
-            });
-            
-            showCustomModal('success', 'Awesome!', `<b>${softwareName}</b> has been added to your favorites successfully!`);
+            try {
+                await deleteDoc(doc(db, "users", currentUser.uid, "favorites", softwareId));
+                showCustomModal('success', 'Removed!', `<b>${softwareName}</b> has been removed from your favorites.`);
+            } catch (error) {
+                // ব্যর্থ হলে আগের অবস্থায় ফেরত নেওয়া
+                window.renderFavoriteBtnState(true);
+                favs.push(softwareId);
+                localStorage.setItem('nexsoftx_user_favs', JSON.stringify(favs));
+                showCustomModal('error', 'Error', 'Failed to remove: ' + error.message);
+            }
 
-            favBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 5px; margin-top: -2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Already Saved`;
-            favBtn.style.background = '#f8fafc';
-            favBtn.style.color = '#94a3b8';
-            favBtn.style.border = '1px solid #e2e8f0';
-            favBtn.style.pointerEvents = 'none';
-            favBtn.style.cursor = 'not-allowed';
+        } else {
+            // ২. অ্যাড টগল (Optimistic UI)
+            window.renderFavoriteBtnState(true);
+            if (!favs.includes(softwareId)) favs.push(softwareId);
+            localStorage.setItem('nexsoftx_user_favs', JSON.stringify(favs));
 
-        } catch (error) {
-            showCustomModal('error', 'Error!', 'Failed to save: ' + error.message);
+            try {
+                await setDoc(doc(db, "users", currentUser.uid, "favorites", softwareId), {
+                    name: softwareName,
+                    link: downloadLink,
+                    savedAt: new Date().toISOString()
+                });
+                showCustomModal('success', 'Saved!', `<b>${softwareName}</b> has been added to your favorites.`);
+            } catch (error) {
+                // ব্যর্থ হলে আগের অবস্থায় ফেরত নেওয়া
+                window.renderFavoriteBtnState(false);
+                favs = favs.filter(id => id !== softwareId);
+                localStorage.setItem('nexsoftx_user_favs', JSON.stringify(favs));
+                showCustomModal('error', 'Error', 'Failed to save: ' + error.message);
+            }
         }
     }
 });
+
 // ==========================================
-// ৬. Remove from Favorites (profile.html)
+// ৬. Remove from Favorites (profile.html) (সম্পূর্ণ সেকশন)
 // ==========================================
 document.addEventListener('click', async (e) => {
     if (e.target && e.target.classList.contains('btn-remove')) {
@@ -295,7 +376,15 @@ document.addEventListener('click', async (e) => {
 
         showCustomModal('confirm', 'Remove Software?', 'Are you sure you want to remove this software from your saved list?', async () => {
             try {
+                // ফায়ারবেস থেকে রিমুভ করা
                 await deleteDoc(doc(db, "users", currentUser.uid, "favorites", softwareId));
+                
+                // লোকাল ক্যাশ থেকে রিমুভ করা
+                if (softwareId) {
+                    localStorage.removeItem('fav_' + softwareId);
+                }
+
+                // প্রোফাইলের লিস্ট রিফ্রেশ করা
                 window.loadUserFavorites(currentUser.uid); 
                 showCustomModal('success', 'Removed!', 'The software has been successfully removed from your list.');
             } catch (error) {
@@ -306,7 +395,7 @@ document.addEventListener('click', async (e) => {
 });
 
 // ==========================================
-// ৭. Load Dynamic Data (profile.html)
+// ৭. Load Dynamic Data (profile.html) (সম্পূর্ণ সেকশন)
 // ==========================================
 window.loadUserFavorites = async function(userId) {
     const listContainer = document.getElementById('savedSoftwareList');
@@ -329,19 +418,24 @@ window.loadUserFavorites = async function(userId) {
         let activityHtml = ""; 
         
         const savedItems = [];
-        querySnapshot.forEach(doc => {
-            savedItems.push({ id: doc.id, ...doc.data() });
+        const savedIds = [];
+        querySnapshot.forEach(docSnap => {
+            savedItems.push({ id: docSnap.id, ...docSnap.data() });
+            savedIds.push(docSnap.id);
         });
+
+        // ক্যাশে ফেভারিট আইডিগুলো সিঙ্ক রাখা
+        localStorage.setItem('nexsoftx_user_favs', JSON.stringify(savedIds));
+
         savedItems.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
 
         savedItems.forEach((data) => {
-            const softwareId = data.id; // অরিজিনাল সফটওয়্যার আইডি
+            const softwareId = data.id;
             const dateObj = new Date(data.savedAt);
             const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
             
-            // 🟢 ১. সেভড সফটওয়্যার কার্ড
-            // এখানে Download বাটনে সরাসরি data-name এবং href দেওয়া হয়েছে যাতে 11 নম্বর সেকশনের পপআপ কাজ করে
+            // ডুপ্লিকেট ID দূর করে ক্লাস ব্যবহার করা হয়েছে
             html += `
                 <div class="saved-item">
                     <div class="saved-item-info">
@@ -355,15 +449,12 @@ window.loadUserFavorites = async function(userId) {
                         </p>
                     </div>
                     <div style="display: flex; gap: 10px; align-items:center;">
-                        <!-- ডাউনলোড পপআপ ট্রিগার করার জন্য আইডি এবং ডাটা সেট করা হয়েছে -->
-                        <a href="${data.link || '#'}" id="downloadBtn" data-name="${data.name}" class="btn-action-view" style="cursor:pointer;">Download</a>
+                        <a href="${data.link || '#'}" data-name="${data.name}" class="btn-action-view btn-download-trigger" style="cursor:pointer; text-decoration:none;">Download</a>
                         <button class="btn-remove modal-btn-danger" style="padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer;" data-id="${softwareId}">Remove</button>
                     </div>
                 </div>
             `;
 
-            // 🟢 ২. রিসেন্ট অ্যাক্টিভিটি 
-            // View বাটনে সঠিক অরিজিনাল সফটওয়্যার আইডি পাস করা হচ্ছে
             activityHtml += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
                     <div>
@@ -385,7 +476,7 @@ window.loadUserFavorites = async function(userId) {
         console.error("Error loading data:", error);
         listContainer.innerHTML = `<p style="color: #ef4444;">Failed to load saved software.</p>`;
     }
-}
+};
 
 // ==========================================
 // ৮. Dropdown Menu & Logout
@@ -415,8 +506,10 @@ if (logoutBtn) {
 }
 
 // ==========================================
-// ৯. Update Profile & Password
+// ৯. Update Profile & Password (সম্পূর্ণ সেকশন)
 // ==========================================
+
+// --- ৯.১: প্রোফাইল ইনফরমেশন আপডেট (নাম ও ইমেইল) ---
 const profileUpdateForm = document.getElementById('profileUpdateForm');
 if (profileUpdateForm) {
     profileUpdateForm.addEventListener('submit', async (e) => {
@@ -432,7 +525,7 @@ if (profileUpdateForm) {
                 
                 if (newName && newName !== currentUser.displayName) {
                     await updateProfile(currentUser, { displayName: newName });
-                    await updateDoc(doc(db, "users", currentUser.uid), { name: newName }); // 🟢 ডাটাবেসেও আপডেট করা হচ্ছে
+                    await updateDoc(doc(db, "users", currentUser.uid), { name: newName });
                     
                     if(document.getElementById('profileName')) document.getElementById('profileName').innerText = newName;
                     if(document.getElementById('welcomeName')) document.getElementById('welcomeName').innerText = `Welcome back, ${newName.split(' ')[0]}!`;
@@ -441,7 +534,7 @@ if (profileUpdateForm) {
                 
                 if (newEmail && newEmail !== currentUser.email) {
                     await verifyBeforeUpdateEmail(currentUser, newEmail);
-                    await updateDoc(doc(db, "users", currentUser.uid), { email: newEmail }); // 🟢 ডাটাবেসেও আপডেট করা হচ্ছে
+                    await updateDoc(doc(db, "users", currentUser.uid), { email: newEmail });
                     isEmailVerificationSent = true;
                 }
                 
@@ -452,7 +545,7 @@ if (profileUpdateForm) {
                 }
                 
             } catch (error) {
-                if(error.code === 'auth/requires-recent-login') {
+                if (error.code === 'auth/requires-recent-login') {
                     showCustomModal('warning', 'Security Alert', 'To change your email address, please Sign Out and Sign In again to verify your identity.');
                 } else {
                     showCustomModal('error', 'Update Failed', error.message);
@@ -462,6 +555,48 @@ if (profileUpdateForm) {
     });
 }
 
+// --- ৯.২: পাসওয়ার্ড পরিবর্তন লজিক (Security Settings) ---
+const passwordChangeForm = document.getElementById('passwordChangeForm');
+if (passwordChangeForm) {
+    passwordChangeForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            showCustomModal('warning', 'Login Required', 'Please log in to change your password.');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            showCustomModal('error', 'Weak Password', 'New password must be at least 6 characters long.');
+            return;
+        }
+
+        try {
+            // ১. বর্তমান পাসওয়ার্ড যাচাই (Re-authentication)
+            const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+            await reauthenticateWithCredential(currentUser, credential);
+
+            // ২. নতুন পাসওয়ার্ড আপডেট
+            await updatePassword(currentUser, newPassword);
+
+            // ৩. ফর্ম ক্লিয়ার ও নোটিফিকেশন
+            passwordChangeForm.reset();
+            showCustomModal('success', 'Password Updated!', 'Your password has been changed successfully.');
+
+        } catch (error) {
+            console.error("Password update error:", error);
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                showCustomModal('error', 'Authentication Failed', 'Current password is incorrect. Please try again.');
+            } else {
+                showCustomModal('error', 'Update Failed', error.message);
+            }
+        }
+    });
+}
 // ==========================================
 // ১০. Support Ticket System (Create & Load)
 // ==========================================
@@ -576,35 +711,51 @@ window.loadUserTickets = async function(userId) {
     }
 }
 // ==========================================
-// ১১. 🚀 Track Software Downloads & Show Popup
+// ১১. Track Software Downloads & Show Popup (No New Tab - Same Page Download)
 // ==========================================
 document.addEventListener('click', (e) => {
-    const downloadBtn = e.target.closest('#downloadBtn') || e.target.closest('.btn-direct-download');
+    const downloadBtn = e.target.closest('#downloadBtn') || e.target.closest('.btn-direct-download') || e.target.closest('.btn-download-trigger');
     
     if (downloadBtn) {
         e.preventDefault(); 
         
         const softwareName = downloadBtn.getAttribute('data-name');
         const downloadLink = downloadBtn.getAttribute('href'); 
+        const filePassword = downloadBtn.getAttribute('data-password');
         
         if (softwareName) {
-            showDownloadConfirmModal(softwareName, downloadLink);
+            showDownloadConfirmModal(softwareName, downloadLink, filePassword);
         }
     }
 });
 
-function showDownloadConfirmModal(softwareName, link) {
+function showDownloadConfirmModal(softwareName, link, filePassword = null) {
     const existingModal = document.getElementById('downloadModal');
     if (existingModal) existingModal.remove();
+
+    // পাসওয়ার্ড থাকলে মেসেজের নিচে ব্যাজ দেখাবে
+    const passwordHtml = filePassword ? `
+        <div style="margin: 10px auto 16px auto; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px 14px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; color: #475569;">
+            <span>File Password: <strong style="color: #0f172a; font-family: monospace; font-size: 0.95rem; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${escapeHtml(filePassword)}</strong></span>
+            <button type="button" id="copyPasswordBtn" style="background: #10b981; color: white; border: none; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Copy</button>
+        </div>
+    ` : '';
 
     const modalHTML = `
         <div class="custom-modal-overlay" id="downloadModal">
             <div class="custom-modal-box">
                 <div class="modal-icon-wrapper icon-bg-success">
-                    <svg width="45" height="45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <svg class="modal-svg-icon" viewBox="0 0 52 52">
+                        <circle class="modal-svg-circle" cx="26" cy="26" r="23" fill="none"/>
+                        <path class="modal-svg-download-arrow" fill="none" d="M26 14v16m-6-6l6 6 6-6"/>
+                        <path class="modal-svg-download-tray" fill="none" d="M17 37h18"/>
+                    </svg>
                 </div>
                 <h3 class="custom-modal-title">Ready to Download</h3>
-                <p class="custom-modal-text">Do you want to start downloading <b>${softwareName}</b>?</p>
+                <p class="custom-modal-text" style="margin-bottom: ${filePassword ? '6px' : '24px'};">Do you want to start downloading <b>${softwareName}</b>?</p>
+                
+                ${passwordHtml}
+
                 <div class="custom-modal-actions">
                     <button class="modal-btn modal-btn-cancel" id="cancelDownloadBtn">Cancel</button>
                     <button class="modal-btn modal-btn-confirm" id="confirmDownloadBtn">Download</button>
@@ -616,11 +767,32 @@ function showDownloadConfirmModal(softwareName, link) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     const modal = document.getElementById('downloadModal');
     
-    setTimeout(() => modal.classList.add('show'), 10);
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+
+    // পাসওয়ার্ড কপি বাটন লজিক
+    if (filePassword) {
+        const copyBtn = document.getElementById('copyPasswordBtn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(filePassword);
+                copyBtn.innerText = 'Copied!';
+                setTimeout(() => { copyBtn.innerText = 'Copy'; }, 2000);
+            });
+        }
+    }
+
+    const closeDownloadModal = (callback) => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+            if (callback) callback();
+        }, 250);
+    };
 
     document.getElementById('cancelDownloadBtn').addEventListener('click', () => {
-        modal.classList.remove('show');
-        setTimeout(() => modal.remove(), 300);
+        closeDownloadModal();
     });
 
     document.getElementById('confirmDownloadBtn').addEventListener('click', async () => {
@@ -634,25 +806,35 @@ function showDownloadConfirmModal(softwareName, link) {
             await setDoc(doc(db, "software", softwareId), {
                 downloadCount: increment(1)
             }, { merge: true });
+
+            if (auth.currentUser) {
+                await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                    totalDownloads: increment(1)
+                });
+                const totalDlEl = document.getElementById('totalDownloadsCount');
+                if (totalDlEl) {
+                    const currentCount = parseInt(totalDlEl.innerText) || 0;
+                    totalDlEl.innerText = currentCount + 1;
+                }
+            }
         } catch (error) {
             console.error("Failed to track download:", error);
         }
 
-        modal.classList.remove('show');
+        // 🟢 হালকা লোড নিয়ে কোনো নতুন ট্যাব ছাড়াই একই পেজে ব্যাকগ্রাউন্ডে ডাউনলোড শুরু হবে
         setTimeout(() => {
-            modal.remove();
-            if (link && link !== '#') {
-                // 🔥 বর্তমান পেজেই থেকে ডাউনলোড ট্রিগার করার জন্য গোপন অ্যাঙ্কর ট্যাগ ব্যবহার করা হলো
-                const a = document.createElement('a');
-                a.href = link;
-                a.setAttribute('download', ''); // ব্রাউজারকে ফাইল ডাউনলোডের নির্দেশ দেয়
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            } else {
-                alert("Download link is currently unavailable.");
-            }
-        }, 300);
+            closeDownloadModal(() => {
+                if (link && link !== '#') {
+                    const silentDownloader = document.createElement('iframe');
+                    silentDownloader.style.display = 'none';
+                    silentDownloader.src = link;
+                    document.body.appendChild(silentDownloader);
+                    setTimeout(() => silentDownloader.remove(), 45000);
+                } else {
+                    alert("Download link is currently unavailable.");
+                }
+            });
+        }, 800);
     });
 }
 
@@ -769,28 +951,110 @@ if (starContainer) {
 }
 
 // ==========================================
-// ১৩. 🚀 Real-time Home & Details Page Loader with Icons
+// ১৩. 🚀 Microsoft Store Style Home & Details Page Loader (সম্পূর্ণ সেকশন)
 // ==========================================
 
-// প্ল্যাটফর্ম অনুযায়ী আইকন সিলেক্ট করার ফাংশন
-function getPlatformIcon(platform) {
+function getPlatformMiniIcon(platform) {
     const p = (platform || "").toLowerCase();
     if (p.includes('mac') || p.includes('ios')) {
-        return `<img src="https://img.icons8.com/color/48/mac-os.png" alt="Mac" style="width: 15px; height: 15px; vertical-align: middle; margin-right: 3px;"> Mac`;
+        return `<svg class="icon-mac" viewBox="2.5 1.5 17 21" fill="#0284c7" style="width:14px; height:14px; vertical-align:middle;"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.56-.69.95-1.65.84-2.62-.83.03-1.86.56-2.45 1.25-.52.6-.97 1.57-.85 2.51.93.07 1.9-.45 2.46-1.14z"/></svg> Mac`;
     } else if (p.includes('android')) {
-        return `<img src="https://img.icons8.com/color/48/android-os.png" alt="Android" style="width: 15px; height: 15px; vertical-align: middle; margin-right: 3px;"> Android`;
+        return `<svg class="icon-android" viewBox="0 3 24 16.5" fill="#10b981" style="width:14px; height:12px; vertical-align:middle;"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.996-3.4572c.156-.2701.0631-.6151-.2069-.7711-.27-.1559-.615-.0631-.771.2069l-2.0231 3.5042c-1.464-.666-3.097-1.041-4.8765-1.041s-3.4125.375-4.8765 1.041L5.1004 5.3001c-.156-.27-.501-.3628-.771-.2069-.27.156-.3629.501-.2069.7711l1.996 3.4572C2.6894 11.2334.3434 14.8114 0 19.1434h24c-.3435-4.332-2.6895-7.91-6.1185-9.822"/></svg> Android`;
     } else {
-        return `<img src="https://img.icons8.com/color/48/windows-10.png" alt="Windows" style="width: 15px; height: 15px; vertical-align: middle; margin-right: 3px;"> Windows`;
+        return `<svg class="icon-win" viewBox="0 0 24 24" fill="#0284c7" style="width:12px; height:12px; vertical-align:middle;"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.901-1.801"/></svg> Win`;
     }
 }
 
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+// 🟢 ট্রানজিশন শেষে স্বয়ংক্রিয়ভাবে overflow: visible ফিরিয়ে দেওয়ার লজিক
+let isShelfNavigating = false;
+window.navigateShelfPage = function(containerId, direction) {
+    if (isShelfNavigating) return;
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const pages = container.querySelectorAll('.ms-shelf-page');
+    if (pages.length <= 1) return;
+
+    let currentIndex = 0;
+    pages.forEach((page, idx) => {
+        if (page.classList.contains('shelf-page-active')) {
+            currentIndex = idx;
+        }
+    });
+
+    let newIndex = currentIndex + direction;
+    if (newIndex < 0 || newIndex >= pages.length || newIndex === currentIndex) return;
+
+    isShelfNavigating = true;
+
+    // 🟢 স্লাইড চলার সময় সাময়িক ক্লিপ হবে যাতে সাইডে স্ক্রোলবার না আসে
+    container.style.overflow = 'hidden';
+
+    const currentPage = pages[currentIndex];
+    const nextPage = pages[newIndex];
+
+    const startX = direction > 0 ? '100%' : '-100%';
+    const endCurrentX = direction > 0 ? '-100%' : '100%';
+
+    nextPage.classList.remove('shelf-page-sliding', 'shelf-page-active', 'shelf-page-hidden');
+    nextPage.style.position = 'absolute';
+    nextPage.style.top = '0';
+    nextPage.style.left = '0';
+    nextPage.style.visibility = 'visible';
+    nextPage.style.pointerEvents = 'none';
+    nextPage.style.opacity = '0';
+    nextPage.style.transform = `translate3d(${startX}, 0, 0)`;
+
+    void nextPage.offsetWidth;
+
+    currentPage.classList.add('shelf-page-sliding');
+    nextPage.classList.add('shelf-page-sliding');
+
+    currentPage.style.opacity = '0';
+    currentPage.style.transform = `translate3d(${endCurrentX}, 0, 0)`;
+
+    nextPage.style.opacity = '1';
+    nextPage.style.transform = 'translate3d(0, 0, 0)';
+
+    setTimeout(() => {
+        currentPage.classList.remove('shelf-page-sliding', 'shelf-page-active');
+        currentPage.classList.add('shelf-page-hidden');
+        currentPage.style.cssText = '';
+
+        nextPage.classList.remove('shelf-page-sliding', 'shelf-page-hidden');
+        nextPage.classList.add('shelf-page-active');
+        nextPage.style.cssText = '';
+
+        // 🟢 স্লাইড শেষ হওয়া মাত্রই সম্পূর্ণ overflow: visible করে দেওয়া (যাতে হোভার শ্যাডো ও কার্ড কখনোই না কাটে)
+        container.style.overflow = 'visible';
+
+        isShelfNavigating = false;
+    }, 460);
+
+    const prevBtn = document.getElementById(containerId.replace('Container', 'Prev'));
+    const nextBtn = document.getElementById(containerId.replace('Container', 'Next'));
+    
+    if (prevBtn) {
+        prevBtn.style.opacity = newIndex === 0 ? '0.35' : '1';
+        prevBtn.style.cursor = newIndex === 0 ? 'default' : 'pointer';
+    }
+    if (nextBtn) {
+        nextBtn.style.opacity = newIndex === pages.length - 1 ? '0.35' : '1';
+        nextBtn.style.cursor = newIndex === pages.length - 1 ? 'default' : 'pointer';
+    }
+};
+
+// -----------------------------------------------------
+// 🛍️ হোমপেজের ৬টি Microsoft Store সেকশন রেন্ডারার
+// -----------------------------------------------------
 window.loadHomeSoftware = function() {
     const contentWrapper = document.getElementById('homePageContent');
     if (!contentWrapper) return;
-
-    // URL থেকে ক্যাটাগরি (os) প্যারামিটার চেক করা হচ্ছে
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetOS = urlParams.get('os');
 
     onSnapshot(collection(db, "software"), (snapshot) => {
         const allSoftware = [];
@@ -798,66 +1062,312 @@ window.loadHomeSoftware = function() {
             allSoftware.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        // পোস্টগুলোকে নতুন থেকে পুরোনো ক্রমানুসারে সাজানো
         allSoftware.sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
 
-        // HTML কার্ড জেনারেট করার হেল্পার ফাংশন
-        const generateHTML = (items, limit) => {
-            if (items.length === 0) return `<p style="text-align: center; color: #64748b; width: 100%; padding: 30px; grid-column: 1 / -1; font-weight: 500;">No software found in this category.</p>`;
-            let html = '';
-            items.slice(0, limit).forEach(data => {
-                html += `
-                    <div class="software-card">
-                        <img src="${data.iconUrl || 'https://via.placeholder.com/300x200'}" alt="${data.title}" class="post-image">
-                        <div class="card-content">
-                            <div class="title-with-icon">
-                                <h4>${data.title}</h4>
-                                <span style="font-size: 0.75rem; background: #f1f5f9; padding: 3px 8px; border-radius: 4px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                    ${getPlatformIcon(data.platform)}
-                                </span>
-                            </div>
-                            <p>${data.shortDesc || ''}</p>
-                            <a href="details.html?id=${data.id}" class="btn-download">View Details</a>
-                        </div>
-                    </div>
-                `;
-            });
-            return html;
-        };
+        const trendingSoft = allSoftware.filter(s => s.section === 'trending_software' || (!s.section && (s.platform || '').toLowerCase().includes('win')));
+        const trendingApps = allSoftware.filter(s => s.section === 'trending_apps' || (!s.section && !(s.platform || '').toLowerCase().includes('win')));
+        const fastItems = allSoftware.filter(s => s.section === 'get_it_done_fast');
+        const bestSelling = allSoftware.filter(s => s.section === 'best_selling_games');
+        const mustHave = allSoftware.filter(s => s.section === 'must_have_apps');
+        const spotlight = allSoftware.filter(s => s.section === 'spotlight_games');
+        const streaming = allSoftware.filter(s => s.section === 'streaming_shelf');
 
-        if (targetOS) {
-            // 🟢 মেনু থেকে নির্দিষ্ট কোনো OS এ ক্লিক করলে (যেমন Windows)
-            document.getElementById('sectionWindows').style.display = 'none';
-            document.getElementById('sectionMac').style.display = 'none';
-            document.getElementById('sectionAndroid').style.display = 'none';
+        // ১. Trending Shelves
+        const secTrending = document.getElementById('sectionTrending');
+        const containerTrendingSoft = document.getElementById('trendingSoftContainer');
+        const containerTrendingApps = document.getElementById('trendingAppsContainer');
+        const navTrendingSoft = document.getElementById('trendingSoftNav');
+        const navTrendingApps = document.getElementById('trendingAppsNav');
+
+        if (secTrending) {
+            secTrending.style.display = (trendingSoft.length > 0 || trendingApps.length > 0) ? 'block' : 'none';
             
-            const mainTitle = document.getElementById('mainSectionTitle');
-            if (targetOS === 'windows') mainTitle.innerText = "Windows Software";
-            else if (targetOS === 'mac') mainTitle.innerText = "Mac Applications";
-            else if (targetOS === 'android') mainTitle.innerText = "Android APKs";
+            if (containerTrendingSoft) {
+                containerTrendingSoft.innerHTML = renderCompactCards(trendingSoft);
+            }
+            if (navTrendingSoft) {
+                navTrendingSoft.style.display = trendingSoft.length > 6 ? 'flex' : 'none';
+                const prevBtn = document.getElementById('trendingSoftPrev');
+                const nextBtn = document.getElementById('trendingSoftNext');
+                if (prevBtn) { prevBtn.style.opacity = '0.35'; prevBtn.style.cursor = 'default'; }
+                if (nextBtn) { nextBtn.style.opacity = '1'; nextBtn.style.cursor = 'pointer'; }
+            }
 
-            const filteredItems = allSoftware.filter(s => (s.platform || "").toLowerCase().includes(targetOS));
-            document.getElementById('latestSoftwareGrid').innerHTML = generateHTML(filteredItems, 30); // ক্যাটাগরি পেজে সর্বোচ্চ ৩০টি
-        } else {
-            // 🟢 ডিফল্ট হোম পেজ
-            document.getElementById('sectionWindows').style.display = 'block';
-            document.getElementById('sectionMac').style.display = 'block';
-            document.getElementById('sectionAndroid').style.display = 'block';
-            document.getElementById('mainSectionTitle').innerText = "Latest Published Software";
+            if (containerTrendingApps) {
+                containerTrendingApps.innerHTML = renderCompactCards(trendingApps);
+            }
+            if (navTrendingApps) {
+                navTrendingApps.style.display = trendingApps.length > 6 ? 'flex' : 'none';
+                const prevBtn = document.getElementById('trendingAppsPrev');
+                const nextBtn = document.getElementById('trendingAppsNext');
+                if (prevBtn) { prevBtn.style.opacity = '0.35'; prevBtn.style.cursor = 'default'; }
+                if (nextBtn) { nextBtn.style.opacity = '1'; nextBtn.style.cursor = 'pointer'; }
+            }
+        }
 
-            const windowsItems = allSoftware.filter(s => (s.platform || "").toLowerCase().includes('windows'));
-            const macItems = allSoftware.filter(s => (s.platform || "").toLowerCase().includes('mac') || (s.platform || "").toLowerCase().includes('ios'));
-            const androidItems = allSoftware.filter(s => (s.platform || "").toLowerCase().includes('android'));
+        // ২. Get It Done Fast
+        const secFast = document.getElementById('sectionFast');
+        const gridFast = document.getElementById('fastGrid');
+        if (secFast) {
+            secFast.style.display = fastItems.length > 0 ? 'block' : 'none';
+            if (gridFast) gridFast.innerHTML = renderFastCards(fastItems);
+        }
 
-            // 🟢 আপনার কথামতো নতুন লিমিট সেট করা হয়েছে (৬ + ১২ + ৬ + ৬ = মোট ৩০টি পোস্ট)
-            document.getElementById('latestSoftwareGrid').innerHTML = generateHTML(allSoftware, 6); 
-            document.getElementById('windowsSoftwareGrid').innerHTML = generateHTML(windowsItems, 12); 
-            document.getElementById('macSoftwareGrid').innerHTML = generateHTML(macItems, 6); 
-            document.getElementById('androidSoftwareGrid').innerHTML = generateHTML(androidItems, 6); 
+        // ৩. Best Selling Posters
+        const secBest = document.getElementById('sectionBestSelling');
+        const rowBest = document.getElementById('bestSellingRow');
+        if (secBest) {
+            secBest.style.display = bestSelling.length > 0 ? 'block' : 'none';
+            if (rowBest) rowBest.innerHTML = renderPosterCards(bestSelling);
+        }
+
+        // ৪. Must-Have Free Apps
+        const secMust = document.getElementById('sectionMustHave');
+        const gridMust = document.getElementById('mustHaveAppsGrid');
+        if (secMust) {
+            secMust.style.display = mustHave.length > 0 ? 'block' : 'none';
+            if (gridMust) gridMust.innerHTML = renderAppCards(mustHave);
+        }
+
+        // ৫. Must-Play Spotlight Picks
+        const secSpot = document.getElementById('sectionSpotlight');
+        const gridSpot = document.getElementById('spotlightGrid');
+        if (secSpot) {
+            secSpot.style.display = spotlight.length > 0 ? 'block' : 'none';
+            if (gridSpot) gridSpot.innerHTML = renderSpotlightCards(spotlight);
+        }
+
+        // ৬. Video Streaming Shelf
+        const secStream = document.getElementById('sectionStreaming');
+        const rowStream = document.getElementById('curatedRow');
+        if (secStream) {
+            secStream.style.display = streaming.length > 0 ? 'block' : 'none';
+            if (rowStream) rowStream.innerHTML = renderCuratedCards(streaming);
         }
     });
+};
+
+// -----------------------------------------------------
+// 🎨 কার্ড রেন্ডারার
+// -----------------------------------------------------
+function renderCompactCards(items) {
+    if (!items || items.length === 0) return '';
+    
+    let html = '';
+    const pageSize = 6;
+    const totalPages = Math.ceil(items.length / pageSize);
+    
+    for (let p = 0; p < totalPages; p++) {
+        const pageItems = items.slice(p * pageSize, (p + 1) * pageSize);
+        const isFirst = (p === 0);
+        
+        // ১ম পেজ shelf-page-active থাকবে, বাকিগুলো shelf-page-hidden
+        html += `<div class="ms-shelf-page ${isFirst ? 'shelf-page-active' : 'shelf-page-hidden'}" data-page="${p}">`;
+        
+        pageItems.forEach(data => {
+            const rating = data.totalVotes > 0 ? (data.totalRatingScore / data.totalVotes).toFixed(1) : '5.0';
+            const displayName = data.name || data.title;
+            const displayCategory = data.category || 'Software';
+            const displayPrice = data.pricing || 'Free';
+
+            html += `
+                <div class="ms-compact-item">
+                    <a href="details.html?id=${data.id}" class="ms-compact-link">
+                        ${data.topNote ? `<span class="ms-corner-badge">${escapeHtml(data.topNote)}</span>` : ''}
+                        <div class="ms-compact-icon-wrapper">
+                            <img src="${data.iconUrl || 'assets/favicon.png'}" class="ms-compact-icon" alt="${escapeHtml(displayName)}">
+                        </div>
+                        <div class="ms-compact-info">
+                            <h4 class="ms-compact-title">${escapeHtml(displayName)}</h4>
+                            <span class="ms-compact-subtitle">
+                                <span class="ms-os-mini-pill">${getPlatformMiniIcon(data.platform)}</span> 
+                                ${escapeHtml(displayCategory)}
+                            </span>
+                        </div>
+                        <span class="ms-compact-badge">${escapeHtml(displayPrice)}</span>
+                    </a>
+                    <div class="ms-hover-flyout">
+                        <div class="ms-flyout-top">
+                            <img src="${data.iconUrl || 'assets/favicon.png'}" class="ms-flyout-icon">
+                            <div class="ms-flyout-header-info">
+                                <h4 class="ms-flyout-title">${escapeHtml(displayName)}</h4>
+                                <div class="ms-flyout-meta"><span class="ms-flyout-rating">${rating} ★</span> <span>${escapeHtml(displayCategory)}</span></div>
+                            </div>
+                            <a href="details.html?id=${data.id}" class="ms-flyout-get-btn">Get</a>
+                        </div>
+                        <p class="ms-flyout-desc">${escapeHtml(data.shortDesc || '')}</p>
+                        <div class="ms-flyout-footer-esrb"><span class="ms-esrb-badge">${escapeHtml(data.topNote || 'VERIFIED')}</span><div class="ms-esrb-text">${escapeHtml(data.developer || 'Nexsoftx')}<br>Direct Download</div></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+    }
+    return html;
 }
 
+function renderFastCards(items) {
+    if (!items || items.length === 0) return '';
+    let html = '';
+    items.forEach(data => {
+        const displayName = data.name || data.title;
+        const displayCategory = data.category || data.developer || 'Software';
+        const displayPrice = data.pricing || 'Free';
+
+        html += `
+            <div class="ms-fast-card">
+                <a href="details.html?id=${data.id}" class="ms-fast-inner">
+                    ${data.topNote ? `<span class="ms-corner-badge">${escapeHtml(data.topNote)}</span>` : ''}
+                    <img src="${data.bannerUrl || data.iconUrl || 'assets/favicon.png'}" class="ms-fast-bg-img" alt="${escapeHtml(displayName)}">
+                    <div class="ms-fast-dark-overlay"></div>
+                    <div class="ms-fast-tagline">${escapeHtml(data.shortDesc || displayName)}</div>
+                    <div class="ms-fast-bottom-bar">
+                        <img src="${data.iconUrl || 'assets/favicon.png'}" class="ms-fast-logo">
+                        <div class="ms-fast-info">
+                            <h4 class="ms-fast-title">${escapeHtml(displayName)}</h4>
+                            <span class="ms-fast-cat">${escapeHtml(displayCategory)}</span>
+                        </div>
+                        <span class="ms-fast-price">${escapeHtml(displayPrice)}</span>
+                    </div>
+                </a>
+                <div class="ms-hover-flyout">
+                    <img src="${data.bannerUrl || data.iconUrl || 'assets/favicon.png'}" class="ms-fast-flyout-banner" alt="${escapeHtml(displayName)}">
+                    <div class="ms-fast-flyout-body">
+                        <div class="ms-flyout-top">
+                            <img src="${data.iconUrl || 'assets/favicon.png'}" class="ms-flyout-icon">
+                            <div class="ms-flyout-header-info">
+                                <h4 class="ms-flyout-title">${escapeHtml(displayName)}</h4>
+                                <div class="ms-flyout-meta"><span>${escapeHtml(data.developer || 'Nexsoftx')}</span></div>
+                            </div>
+                            <a href="details.html?id=${data.id}" class="ms-flyout-get-btn">Install</a>
+                        </div>
+                        <p class="ms-flyout-desc">${escapeHtml(data.shortDesc || '')}</p>
+                        <div class="ms-flyout-footer-esrb"><span class="ms-esrb-badge">${escapeHtml(data.topNote || 'EVERYONE')}</span><div class="ms-esrb-text">${escapeHtml(data.size || 'Direct Link')}</div></div>
+                    </div>
+                </div>
+            </div>`;
+    });
+    return html;
+}
+
+function renderPosterCards(items) {
+    if (!items || items.length === 0) return '';
+    let html = '';
+    items.forEach(data => {
+        const displayName = data.name || data.title;
+        const displayPrice = data.pricing || 'Free';
+
+        html += `
+            <div class="ms-poster-card">
+                <a href="details.html?id=${data.id}" class="ms-poster-inner">
+                    ${data.topNote ? `<span class="ms-corner-badge">${escapeHtml(data.topNote)}</span>` : ''}
+                    <img src="${data.bannerUrl || data.iconUrl || 'assets/favicon.png'}" class="ms-poster-bg-img" alt="${escapeHtml(displayName)}">
+                    <div class="ms-poster-overlay"></div>
+                    <div class="ms-poster-info">
+                        <h4 class="ms-poster-name">${escapeHtml(displayName)}</h4>
+                        <span class="ms-poster-status">${escapeHtml(displayPrice)}</span>
+                    </div>
+                </a>
+                <div class="ms-hover-flyout">
+                    <div class="ms-flyout-media"><img src="${data.bannerUrl || data.iconUrl || 'assets/favicon.png'}" alt="${escapeHtml(displayName)}"><span class="ms-media-play-icon">▶</span></div>
+                    <div class="ms-flyout-poster-body">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                            <div><h4 class="ms-poster-flyout-title">${escapeHtml(displayName)}</h4><div class="ms-poster-flyout-sub">${escapeHtml(data.developer || 'Nexsoftx')}</div></div>
+                            <a href="details.html?id=${data.id}" class="ms-flyout-get-btn">Get</a>
+                        </div>
+                        <p class="ms-flyout-desc">${escapeHtml(data.shortDesc || '')}</p>
+                        <div class="ms-flyout-footer-esrb"><span class="ms-esrb-badge">${escapeHtml(data.topNote || 'VERIFIED')}</span><div class="ms-esrb-text">${escapeHtml(data.size || 'Free Download')}</div></div>
+                    </div>
+                </div>
+            </div>`;
+    });
+    return html;
+}
+
+function renderAppCards(items) {
+    if (!items || items.length === 0) return '';
+    let html = '';
+    items.forEach(data => {
+        const displayName = data.name || data.title;
+        const displayCategory = data.category || 'App';
+        const displayPrice = data.pricing || 'Free';
+
+        html += `
+            <div class="ms-app-card">
+                ${data.topNote ? `<span class="ms-corner-badge">${escapeHtml(data.topNote)}</span>` : ''}
+                <img src="${data.iconUrl || 'assets/favicon.png'}" class="ms-app-icon" alt="${escapeHtml(displayName)}">
+                <div class="ms-app-info">
+                    <h4 class="ms-app-title">${escapeHtml(displayName)}</h4>
+                    <span class="ms-app-cat">
+                        <span class="ms-os-mini-pill">${getPlatformMiniIcon(data.platform)}</span> 
+                        ${escapeHtml(displayCategory)}
+                    </span>
+                </div>
+                <span class="ms-app-badge">${escapeHtml(displayPrice)}</span>
+            </div>`;
+    });
+    return html;
+}
+
+function renderSpotlightCards(items) {
+    if (!items || items.length === 0) return '';
+    let html = '';
+    items.forEach(data => {
+        const displayName = data.name || data.title;
+        const displayCategory = data.category || 'Game';
+        const displayPrice = data.pricing || 'Free';
+
+        html += `
+            <div class="ms-spotlight-item">
+                <a href="details.html?id=${data.id}" class="ms-spotlight-inner">
+                    ${data.topNote ? `<span class="ms-corner-badge">${escapeHtml(data.topNote)}</span>` : ''}
+                    <img src="${data.bannerUrl || data.iconUrl || 'assets/favicon.png'}" class="ms-spotlight-art-img" alt="${escapeHtml(displayName)}">
+                    <div class="ms-spotlight-gradient-overlay"></div>
+                    <div class="ms-spotlight-bar">
+                        <img src="${data.iconUrl || 'assets/favicon.png'}" class="ms-spotlight-mini-icon">
+                        <div class="ms-spotlight-bar-info">
+                            <h4 class="ms-spotlight-bar-title">${escapeHtml(displayName)}</h4>
+                            <span class="ms-spotlight-bar-cat">${escapeHtml(displayCategory)}</span>
+                        </div>
+                        <span class="ms-spotlight-bar-price">${escapeHtml(displayPrice)}</span>
+                    </div>
+                </a>
+            </div>`;
+    });
+    return html;
+}
+
+function renderCuratedCards(items) {
+    if (!items || items.length === 0) return '';
+    let html = '';
+    items.forEach(data => {
+        const displayName = data.name || data.title;
+        const displayPrice = data.pricing || 'Free';
+
+        html += `
+            <div class="ms-curated-card">
+                <a href="details.html?id=${data.id}" class="ms-curated-inner">
+                    ${data.topNote ? `<span class="ms-corner-badge">${escapeHtml(data.topNote)}</span>` : ''}
+                    <div class="ms-curated-top-banner" style="background: #e0f2fe;">
+                        <img src="${data.iconUrl || 'assets/favicon.png'}" class="ms-curated-app-logo">
+                    </div>
+                    <div class="ms-curated-bottom-info">
+                        <h4 class="ms-curated-app-title">${escapeHtml(displayName)}</h4>
+                        <div class="ms-curated-sub-row">
+                            <span class="ms-os-mini-pill">${getPlatformMiniIcon(data.platform)}</span>
+                            <span class="ms-curated-app-price">${escapeHtml(displayPrice)}</span>
+                        </div>
+                    </div>
+                </a>
+            </div>`;
+    });
+    return html;
+}
+
+// -----------------------------------------------------
+// 📄 সফটওয়্যার ডিটেইলস পেজ লোডার (details.html)
+// -----------------------------------------------------
 window.loadSoftwareDetails = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const softwareId = urlParams.get('id');
@@ -870,17 +1380,18 @@ window.loadSoftwareDetails = async function() {
         if (docSnap.exists()) {
             const data = docSnap.data();
 
-            document.title = `${data.title} - Nexsoftx`;
-            if(document.getElementById('detTitle')) document.getElementById('detTitle').innerText = data.title;
+            const fullTitle = data.title || data.name;
+            document.title = `${fullTitle} - Nexsoftx`;
+            if(document.getElementById('detTitle')) document.getElementById('detTitle').innerText = fullTitle;
             if(document.getElementById('detShortDesc')) document.getElementById('detShortDesc').innerText = data.shortDesc;
             if(document.getElementById('detCoverImg')) document.getElementById('detCoverImg').src = data.bannerUrl || data.iconUrl;
             if(document.getElementById('detFullDesc')) document.getElementById('detFullDesc').innerHTML = data.fullDesc || `<p>${data.shortDesc}</p>`;
             if(document.getElementById('detFileSize')) document.getElementById('detFileSize').innerHTML = `${data.size || 'N/A'}`;
 
-            if(document.getElementById('detFileName')) document.getElementById('detFileName').innerText = data.fileName || data.title;
+            if(document.getElementById('detFileName')) document.getElementById('detFileName').innerText = data.fileName || data.name || fullTitle;
             if(document.getElementById('detDeveloper')) document.getElementById('detDeveloper').innerText = data.developer || 'Unknown';
             if(document.getElementById('detVersion')) document.getElementById('detVersion').innerText = data.version || 'Latest';
-            if(document.getElementById('detLicense')) document.getElementById('detLicense').innerText = data.license || 'Freeware';
+            if(document.getElementById('detLicense')) document.getElementById('detLicense').innerText = data.license || data.pricing || 'Freeware';
             
             if(document.getElementById('detReleaseDate')) {
                 const dateToUse = data.releaseDate ? new Date(data.releaseDate) : (data.publishedAt ? new Date(data.publishedAt) : new Date());
@@ -897,20 +1408,28 @@ window.loadSoftwareDetails = async function() {
             if(document.getElementById('detTotalDownloads')) document.getElementById('detTotalDownloads').innerText = data.downloadCount || '0';
             if(document.getElementById('detUploadedBy')) document.getElementById('detUploadedBy').innerText = data.uploadedBy || 'Nexsoftx Team';
 
-            if(document.getElementById('detTags') && data.tags) {
-                const tagArray = data.tags.split(',').map(t => t.trim());
-                document.getElementById('detTags').innerHTML = tagArray.map(t => `<span class="tag-badge">${t}</span>`).join(', ');
+            if(document.getElementById('detTags') && (data.tags || data.category)) {
+                const combinedTags = `${data.category ? data.category + ', ' : ''}${data.tags || ''}`;
+                const tagArray = combinedTags.split(',').map(t => t.trim()).filter(Boolean);
+                document.getElementById('detTags').innerHTML = tagArray.map(t => `<span class="tag-badge">${escapeHtml(t)}</span>`).join(', ');
             }
 
             const dlBtn = document.getElementById('downloadBtn');
             if(dlBtn) {
-                dlBtn.setAttribute('data-name', data.title);
+                dlBtn.setAttribute('data-name', data.name || fullTitle);
                 dlBtn.href = data.downloadLink || '#';
+                
+                if (data.filePassword) {
+                    dlBtn.setAttribute('data-password', data.filePassword);
+                } else {
+                    dlBtn.removeAttribute('data-password');
+                }
             }
+            
             const favBtn = document.getElementById('favoriteBtn');
-            if(favBtn) { favBtn.setAttribute('data-name', data.title); }
+            if(favBtn) { favBtn.setAttribute('data-name', data.name || fullTitle); }
             const starRating = document.getElementById('starRating');
-            if(starRating) { starRating.setAttribute('data-software', data.title); }
+            if(starRating) { starRating.setAttribute('data-software', data.name || fullTitle); }
 
             window.loadRelatedSoftware(softwareId);
         } else {
@@ -919,7 +1438,7 @@ window.loadSoftwareDetails = async function() {
     } catch (error) {
         console.error("Error loading software details:", error);
     }
-}
+};
 
 window.loadRelatedSoftware = async function(currentSoftwareId) {
     const grid = document.getElementById('relatedSoftwareGrid');
@@ -936,17 +1455,18 @@ window.loadRelatedSoftware = async function(currentSoftwareId) {
 
             if (id !== currentSoftwareId && count < 6) {
                 count++;
+                const relName = data.name || data.title;
                 html += `
                     <div class="software-card">
-                        <img src="${data.iconUrl || 'https://via.placeholder.com/300x200'}" alt="${data.title}" class="post-image">
+                        <img src="${data.iconUrl || 'assets/favicon.png'}" alt="${escapeHtml(relName)}" class="post-image">
                         <div class="card-content">
                             <div class="title-with-icon">
-                                <h4>${data.title}</h4>
+                                <h4>${escapeHtml(relName)}</h4>
                                 <span style="font-size: 0.75rem; background: #f1f5f9; padding: 3px 8px; border-radius: 4px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                    ${getPlatformIcon(data.platform)}
+                                    ${getPlatformMiniIcon(data.platform)}
                                 </span>
                             </div>
-                            <p>${data.shortDesc || ''}</p>
+                            <p>${escapeHtml(data.shortDesc || '')}</p>
                             <a href="details.html?id=${id}" class="btn-download">View Details</a>
                         </div>
                     </div>
@@ -962,7 +1482,7 @@ window.loadRelatedSoftware = async function(currentSoftwareId) {
     } catch (error) {
         console.error("Error loading related software:", error);
     }
-}
+};
 
 if (document.getElementById('homePageContent')) {
     window.loadHomeSoftware();
@@ -972,11 +1492,11 @@ if (window.location.pathname.includes('details.html')) {
 }
 
 // ==========================================
-// 🔍 ১৪. Advanced Google-like Search (Fuzzy & Suggestions)
+// 🔍 ১৪. Advanced Google-like Search (Fuzzy, Suggestions & Enter Key) (সম্পূর্ণ সেকশন)
 // ==========================================
 let allSoftwareList = [];
 
-// ফায়ারবেস থেকে সব সফটওয়্যার আগে থেকে লোড করে রাখা (দ্রুত সার্চের জন্য)
+// ফায়ারবেস থেকে সব সফটওয়্যার আগে থেকে লোড করে রাখা
 async function fetchAllSoftwareForSearch() {
     try {
         const querySnapshot = await getDocs(collection(db, "software"));
@@ -1007,8 +1527,9 @@ const searchInput = document.getElementById('searchInput');
 const searchSuggestions = document.getElementById('searchSuggestions');
 
 if (searchInput && searchSuggestions) {
-    fetchAllSoftwareForSearch(); // পেজ লোড হলেই ডাটা ফেচ হবে
+    fetchAllSoftwareForSearch();
 
+    // ১. টাইপ করার সাথে সাথে সাজেশান ফিল্টারিং
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
         searchSuggestions.innerHTML = '';
@@ -1018,16 +1539,15 @@ if (searchInput && searchSuggestions) {
             return;
         }
 
-        // সার্চ ফিল্টারিং এবং স্কোরিং (Typo Tolerance)
         let results = allSoftwareList.map(item => {
-            const title = item.title.toLowerCase();
+            const title = (item.title || "").toLowerCase();
             let matchScore = 0;
             
-            // ১. যদি একদম সঠিকভাবে টাইপ করে বা নামের অংশ মিলে যায় (Perfect Match)
+            // পারফেক্ট ম্যাচ
             if (title.includes(query)) {
                 matchScore = 100; 
             } else {
-                // ২. বানান ভুল থাকলে (Fuzzy Match / Typo Check)
+                // ফাজি / বানান ভুলের জন্য ম্যাচ
                 const titleWords = title.split(' ');
                 const queryWords = query.split(' ');
                 
@@ -1039,7 +1559,6 @@ if (searchInput && searchSuggestions) {
                     });
                 });
                 
-                // যদি বানানে ১-২ অক্ষরের ভুল থাকে, তবে সেটিকেও রেজাল্টে আনবে
                 if (minDistance <= 2) {
                     matchScore = 50 - minDistance; 
                 }
@@ -1047,16 +1566,16 @@ if (searchInput && searchSuggestions) {
             return { ...item, matchScore };
         })
         .filter(item => item.matchScore > 0)
-        .sort((a, b) => b.matchScore - a.matchScore) // সবচেয়ে বেশি মেলা রেজাল্ট উপরে
-        .slice(0, 5); // সর্বোচ্চ ৫টি সাজেশান দেখাবে
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .slice(0, 5);
 
-        // HTML রেন্ডার করা
+        // ড্রপডাউনে HTML রেন্ডার করা
         if (results.length > 0) {
             let html = '';
             results.forEach(item => {
                 html += `
                     <a href="details.html?id=${item.id}" class="suggestion-item">
-                        <img src="${item.iconUrl || 'https://via.placeholder.com/40'}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
+                        <img src="${item.iconUrl || 'assets/favicon.png'}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
                         <div>
                             <h4>${item.title}</h4>
                             <span>${getPlatformIcon(item.platform)}</span>
@@ -1067,23 +1586,83 @@ if (searchInput && searchSuggestions) {
             searchSuggestions.innerHTML = html;
             searchSuggestions.style.display = 'block';
         } else {
-            // কিছুই না পাওয়া গেলে
-            searchSuggestions.innerHTML = `<div style="padding: 18px 20px; color: #64748b; font-size: 0.95rem; text-align: center;">No software found for "<b>${query}</b>"</div>`;
+            searchSuggestions.innerHTML = `<div style="padding: 18px 20px; color: #64748b; font-size: 0.95rem; text-align: center;">No software found for "<b>${escapeHtmlText(query)}</b>"</div>`;
             searchSuggestions.style.display = 'block';
         }
     });
 
-    // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হয়ে যাবে
+    // ২. কীবোর্ডের Enter চাপলে স্বয়ংক্রিয়ভাবে প্রথম সফটওয়্যারের পেজে নিয়ে যাওয়া
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstSuggestion = searchSuggestions.querySelector('.suggestion-item');
+            if (firstSuggestion) {
+                firstSuggestion.click();
+            }
+        }
+    });
+
+    // ৩. বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হওয়া
     document.addEventListener('click', (e) => {
         if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
             searchSuggestions.style.display = 'none';
         }
     });
     
-    // ইনপুটে ফোকাস করলে আবার ড্রপডাউন দেখাবে
+    // ৪. ইনপুটে ক্লিক বা ফোকাস করলে পুনরায় ড্রপডাউন দেখানো
     searchInput.addEventListener('focus', () => {
         if (searchInput.value.trim().length > 0 && searchSuggestions.innerHTML !== '') {
             searchSuggestions.style.display = 'block';
         }
     });
 }
+
+// ==========================================
+// 🚀 ইউনিভার্সাল হরাইজন্টাল স্ক্রোলিং ফাংশন (সব সেকশনের জন্য)
+// ==========================================
+window.scrollShelf = function(elementId, direction) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        // ক্লিকে মসৃণভাবে ৮০% স্ক্রিন একবারে ডানে বা বামে স্ক্রোল হবে
+        const scrollAmount = el.clientWidth * 0.8;
+        el.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+};
+
+// ==========================================
+// 📢 Render Global Top Note on Website
+// ==========================================
+async function renderWebsiteTopNote() {
+    try {
+        const docSnap = await getDoc(doc(db, "settings", "top_note"));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const existingBanner = document.getElementById('siteTopNoteBanner');
+            if (existingBanner) existingBanner.remove();
+
+            if (data.enabled && data.text) {
+                const bgColors = {
+                    success: 'linear-gradient(135deg, #10b981, #059669)',
+                    info: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                    warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    dark: '#0f172a'
+                };
+
+                const bannerHtml = `
+                    <div id="siteTopNoteBanner" style="background: ${bgColors[data.type] || bgColors.success}; color: white; text-align: center; padding: 10px 20px; font-size: 0.9rem; font-weight: 600; position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <span>${data.text}</span>
+                        <button onclick="document.getElementById('siteTopNoteBanner').remove()" style="background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-left: 10px;">&times;</button>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('afterbegin', bannerHtml);
+                
+                // ব্যানার অন থাকলে ন্যাভবারকে সামান্য নিচে নামিয়ে দেয়া
+                const navbar = document.querySelector('.navbar');
+                if (navbar) navbar.style.top = '42px';
+            }
+        }
+    } catch (e) {
+        console.error("Top note render error:", e);
+    }
+}
+renderWebsiteTopNote();
