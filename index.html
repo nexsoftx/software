@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexsoftx - Download Desktop Software</title>
     <!-- CSS ফাইলের সাথে লিংক করা হলো -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <!-- Favicon -->
     <!-- Favicon (Cache Busted) -->
     <link rel="icon" href="assets/favicon.png?v=2" type="image/png">
@@ -137,43 +137,94 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- 📌 ৩. Real-time Software Grid Section -->
-    <!-- ========================================== -->
+    <!-- ======================================================= -->
+    <!-- 🛍️ MICROSOFT STORE COMPLETE HOMEPAGE (ALL FIXED)       -->
+    <!-- ======================================================= -->
+    <!-- ======================================================= -->
+    <!-- 🛍️ DYNAMIC HOMEPAGE (NO DEMO DATA)                     -->
+    <!-- ======================================================= -->
     <div id="homePageContent">
-        <!-- ১. Latest Software (সব মিলিয়ে সর্বশেষ ৬টি) -->
-        <section class="software-section" id="sectionLatest">
-            <div class="section-header">
-                <h3 id="mainSectionTitle">Latest Published Software</h3>
+        
+        <!-- 📌 ১. TRENDING SHELVES (Clean No-Clip Layout) -->
+        <section class="ms-store-section" id="sectionTrending" style="display: none;">
+            <div class="ms-split-container">
+                
+                <!-- বাম কলাম: Trending Software -->
+                <div class="ms-shelf-column">
+                    <div class="ms-shelf-header">
+                        <a href="index.html?os=windows" class="ms-shelf-title">Trending Software <span>&rsaquo;</span></a>
+                        <div class="ms-shelf-nav" id="trendingSoftNav" style="display: none;">
+                            <button type="button" class="ms-nav-btn" id="trendingSoftPrev" onclick="navigateShelfPage('trendingSoftContainer', -1)">&lsaquo;</button>
+                            <button type="button" class="ms-nav-btn" id="trendingSoftNext" onclick="navigateShelfPage('trendingSoftContainer', 1)">&rsaquo;</button>
+                        </div>
+                    </div>
+                    <div class="ms-shelf-container" id="trendingSoftContainer"></div>
+                </div>
+
+                <!-- ডান কলাম: Trending Apps -->
+                <div class="ms-shelf-column">
+                    <div class="ms-shelf-header">
+                        <a href="index.html?os=mac" class="ms-shelf-title">Trending Apps <span>&rsaquo;</span></a>
+                        <div class="ms-shelf-nav" id="trendingAppsNav" style="display: none;">
+                            <button type="button" class="ms-nav-btn" id="trendingAppsPrev" onclick="navigateShelfPage('trendingAppsContainer', -1)">&lsaquo;</button>
+                            <button type="button" class="ms-nav-btn" id="trendingAppsNext" onclick="navigateShelfPage('trendingAppsContainer', 1)">&rsaquo;</button>
+                        </div>
+                    </div>
+                    <div class="ms-shelf-container" id="trendingAppsContainer"></div>
+                </div>
+
             </div>
-            <div class="software-grid" id="latestSoftwareGrid">
-                <p style="text-align: center; color: #64748b; width: 100%; padding: 20px; grid-column: 1 / -1; font-weight: 500;">Loading software...</p>
+        </section>
+        
+        <!-- 📌 ২. GET IT DONE FAST -->
+        <section class="ms-store-section" id="sectionFast" style="display: none;">
+            <div class="ms-shelf-header">
+                <a href="#" class="ms-shelf-title">Get it done fast <span>&rsaquo;</span></a>
             </div>
+            <div class="ms-fast-grid" id="fastGrid"></div>
         </section>
 
-        <!-- ২. Windows Software -->
-        <section class="software-section" id="sectionWindows" style="padding-top: 0;">
-            <div class="section-header">
-                <h3>Windows Software</h3>
+        <!-- 📌 ৩. BEST SELLING POSTERS -->
+        <section class="ms-store-section" id="sectionBestSelling" style="display: none;">
+            <div class="ms-shelf-header">
+                <a href="#" class="ms-shelf-title">Best selling games & software <span>&rsaquo;</span></a>
+                <div class="ms-shelf-nav">
+                    <button type="button" class="ms-nav-btn" onclick="scrollShelf('bestSellingRow', -1)">&lsaquo;</button>
+                    <button type="button" class="ms-nav-btn" onclick="scrollShelf('bestSellingRow', 1)">&rsaquo;</button>
+                </div>
             </div>
-            <div class="software-grid" id="windowsSoftwareGrid"></div>
+            <div class="ms-poster-row-8" id="bestSellingRow"></div>
         </section>
 
-        <!-- ৩. Mac Applications -->
-        <section class="software-section" id="sectionMac" style="padding-top: 0;">
-            <div class="section-header">
-                <h3>Mac Applications</h3>
+        <!-- 📌 ৪. MUST-HAVE FREE APPS -->
+        <section class="ms-store-section" id="sectionMustHave" style="display: none;">
+            <div class="ms-shelf-header">
+                <a href="#" class="ms-shelf-title">Must-have free apps <span>&rsaquo;</span></a>
             </div>
-            <div class="software-grid" id="macSoftwareGrid"></div>
+            <div class="ms-apps-grid-16" id="mustHaveAppsGrid"></div>
         </section>
 
-        <!-- ৪. Android APKs -->
-        <section class="software-section" id="sectionAndroid" style="padding-top: 0;">
-            <div class="section-header">
-                <h3>Android APKs</h3>
+        <!-- 📌 ৫. MUST-PLAY SPOTLIGHT PICKS -->
+        <section class="ms-store-section" id="sectionSpotlight" style="display: none;">
+            <div class="ms-shelf-header">
+                <a href="#" class="ms-shelf-title">Must-play spotlight picks <span>&rsaquo;</span></a>
             </div>
-            <div class="software-grid" id="androidSoftwareGrid"></div>
+            <div class="ms-spotlight-grid" id="spotlightGrid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%;"></div>
         </section>
+
+        <!-- 📌 ৬. VIDEO STREAMING SHELF -->
+        <section class="ms-store-section" id="sectionStreaming" style="display: none; margin-bottom: 95px;">
+            <div class="ms-shelf-header">
+                <a href="#" class="ms-shelf-title">Featured & Streaming Shelf <span>&rsaquo;</span></a>
+                <div class="ms-shelf-nav">
+                    <button type="button" class="ms-nav-btn" onclick="scrollShelf('curatedRow', -1)">&lsaquo;</button>
+                    <button type="button" class="ms-nav-btn" onclick="scrollShelf('curatedRow', 1)">&rsaquo;</button>
+                </div>
+            </div>
+            <div class="ms-curated-row-8" id="curatedRow"></div>
+        </section>
+
+
     </div>
 
     <!-- ========================================== -->
@@ -188,31 +239,29 @@
                 <p>Your ultimate destination for downloading safe, verified, and latest software for Windows, Mac, and Android.</p>
             </div>
 
-            <!-- কলাম ২: কুইক লিংকস -->
+            <!-- কলাম ২: কার্যকর ডাউনলোড লিংক -->
             <div class="footer-col">
                 <h4>Download Software</h4>
                 <ul>
-                    <li><a href="#">Windows Software</a></li>
-                    <li><a href="#">Mac Applications</a></li>
-                    <li><a href="#">Android APKs</a></li>
-                    <li><a href="#">Categories</a></li>
+                    <li><a href="index.html?os=windows">Windows Software</a></li>
+                    <li><a href="index.html?os=mac">Mac Applications</a></li>
+                    <li><a href="index.html?os=android">Android APKs</a></li>
                 </ul>
             </div>
 
-            <!-- কলাম ৩: সাপোর্ট ও রিকোয়েস্ট -->
+            <!-- কলাম ৩: সাপোর্ট ও কন্টাক্ট লিংক -->
             <div class="footer-col">
                 <h4>Support Center</h4>
                 <ul>
-                    <li><a href="#">Software Request</a></li>
-                    <li><a href="#">Report a Broken Link</a></li>
-                    <li><a href="#">FAQs</a></li>
-                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="contact.html">Software Request</a></li>
+                    <li><a href="contact.html">Report a Broken Link</a></li>
                 </ul>
             </div>
             
         </div>
 
-        <!-- ফুটারের একদম নিচের অংশ (কপিরাইট ও পলিসি) -->
+        <!-- ফুটারের কপিরাইট ও পলিসি -->
         <div class="footer-bottom">
             <div class="footer-legal">
                 <a href="#">Terms of Service</a>
@@ -221,7 +270,7 @@
             </div>
             <div class="footer-copyright">
                 <p>&copy; 2026 Nexsoftx. All rights reserved.</p>
-                <p style="margin-top: 5px;">Developed by Tawsif Ahamed Shuvo</p>
+                <p style="margin-top: 5px;">Developed by MD Shuvo Hossain [Nexsoftx]</p>
             </div>
         </div>
     </footer>
