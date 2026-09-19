@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- Favicon -->
     <link rel="icon" href="assets/favicon.png?v=2" type="image/png">
+
     <!-- 🟢 UI Flashing Fix: ফায়ারবেস চেক করার আগে পুরো পেজ অদৃশ্য রাখা -->
     <script>document.documentElement.style.display = 'none';</script>
     
@@ -185,11 +186,56 @@
                     <div class="upload-card">
                         <h2>Publish New Software</h2>
                         <form id="publishSoftwareForm">
+                            
+                            <!-- Software Name (Homepage) & Software Title (Details Page) -->
                             <div class="form-row">
                                 <div class="dash-form-group">
-                                    <label>Software Title</label>
-                                    <input type="text" id="softTitle" class="admin-input" placeholder="e.g., Adobe Photoshop 2026" required>
+                                    <label>Software Name</label>
+                                    <input type="text" id="softName" class="admin-input" placeholder="e.g., Wondershare PDFelement" required>
                                 </div>
+                                <div class="dash-form-group">
+                                    <label>Full Software Title</label>
+                                    <input type="text" id="softTitle" class="admin-input" placeholder="e.g., Wondershare PDFelement Pro 12.2 Full Version" required>
+                                </div>
+                            </div>
+
+                            <!-- Category & Pricing Status -->
+                            <div class="form-row">
+                                <div class="dash-form-group">
+                                    <label>Software Category</label>
+                                    <input type="text" id="softCategory" class="admin-input" placeholder="e.g., PDF Editor, Video Editor, Utility" required>
+                                </div>
+                                <div class="dash-form-group">
+                                    <label>Pricing Status</label>
+                                    <select id="softPricing" class="admin-input">
+                                        <option value="Free">Free</option>
+                                        <option value="Paid">Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Section Control & Top Note -->
+                            <div class="form-row">
+                                <div class="dash-form-group">
+                                    <label>Homepage Section Control</label>
+                                    <select id="softSection" class="admin-input">
+                                        <option value="trending_software">Trending Software</option>
+                                        <option value="trending_apps">Trending Apps</option>
+                                        <option value="get_it_done_fast">Get It Done Fast</option>
+                                        <option value="best_selling_games">Best Selling Games</option>
+                                        <option value="must_have_apps">Must-have Free Apps</option>
+                                        <option value="spotlight_games">Must-play Free Games</option>
+                                        <option value="streaming_shelf">Video Streaming Shelf</option>
+                                    </select>
+                                </div>
+                                <div class="dash-form-group">
+                                    <label>Top Note / Badge (Optional)</label>
+                                    <input type="text" id="softTopNote" class="admin-input" placeholder="e.g., HOT, Featured, Game Pass, New Release">
+                                </div>
+                            </div>
+
+                            <!-- Platform & File Name -->
+                            <div class="form-row">
                                 <div class="dash-form-group">
                                     <label>Platform / OS</label>
                                     <select id="softPlatform" class="admin-input">
@@ -198,48 +244,54 @@
                                         <option value="Android">Android</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="form-row">
                                 <div class="dash-form-group">
                                     <label>Actual File Name</label>
-                                    <input type="text" id="softFileName" class="admin-input" placeholder="e.g., Wondershare PDFelement Pro 12.exe">
+                                    <input type="text" id="softFileName" class="admin-input" placeholder="e.g., PDFelement_Pro_12.exe">
                                 </div>
                                 <div class="dash-form-group">
-                                    <label>Created By (Developer)</label>
-                                    <input type="text" id="softDeveloper" class="admin-input" placeholder="e.g., Wondershare">
+                                    <label>File Password (Optional)</label>
+                                    <input type="text" id="softPassword" class="admin-input" placeholder="e.g., 123 or nexsoftx">
                                 </div>
+                                
                             </div>
+                            
 
+                    
+                            <!-- Icon & Banner with Dynamic Size Hints -->
                             <div class="form-row">
                                 <div class="dash-form-group">
-                                    <label>App Icon URL (Thumbnail)</label>
+                                    <label>App Icon URL</label>
                                     <input type="url" id="softIcon" class="admin-input" placeholder="https://example.com/icon.png" required>
-                                    <span class="image-hint">✓ Auto-resizes to 150x150px (Square)</span>
+                                    <span id="iconSizeHint" style="color: #0284c7; font-size: 0.8rem; font-weight: 600; display: block; margin-top: 6px;">Recommended: 150x150px (Square 1:1)</span>
                                 </div>
                                 <div class="dash-form-group">
                                     <label>Cover Banner URL</label>
                                     <input type="url" id="softBanner" class="admin-input" placeholder="https://example.com/banner.jpg" required>
-                                    <span class="image-hint">✓ Auto-resizes to 800x400px (Wide)</span>
+                                    <span id="bannerSizeHint" style="color: #0284c7; font-size: 0.8rem; font-weight: 600; display: block; margin-top: 6px;">Recommended: 800x450px (Landscape 16:9)</span>
                                 </div>
                             </div>
 
                             <div class="form-row">
-                                <div class="dash-form-group"><label>Version</label><input type="text" id="softVersion" class="admin-input" placeholder="e.g., 12.2.2.4430" required></div>
+                                <div class="dash-form-group"><label>Developer</label><input type="text" id="softDeveloper" class="admin-input" placeholder="e.g., Wondershare"></div>
+                                <div class="dash-form-group"><label>Version</label><input type="text" id="softVersion" class="admin-input" placeholder="e.g., 12.2.0" required></div>
                                 <div class="dash-form-group"><label>File Size</label><input type="text" id="softSize" class="admin-input" placeholder="e.g., 232 MB" required></div>
-                                <div class="dash-form-group"><label>License Type</label><input type="text" id="softLicense" class="admin-input" placeholder="e.g., Full Version, Freeware"></div>
                             </div>
 
                             <div class="form-row">
+                                <div class="dash-form-group"><label>License Type</label><input type="text" id="softLicense" class="admin-input" placeholder="e.g., Full Version, Freeware"></div>
                                 <div class="dash-form-group"><label>Release Date</label><input type="date" id="softReleaseDate" class="admin-input"></div>
                                 <div class="dash-form-group"><label>Languages</label><input type="text" id="softLanguages" class="admin-input" placeholder="e.g., English, Multilingual"></div>
-                                <div class="dash-form-group"><label>Change Log Link</label><input type="url" id="softChangelog" class="admin-input" placeholder="https://example.com/whats-new"></div>
                             </div>
 
                             <div class="form-row">
                                 <div class="dash-form-group"><label>Tags (Comma separated)</label><input type="text" id="softTags" class="admin-input" placeholder="e.g., PDF Editor, OCR"></div>
-                                <div class="dash-form-group"><label>Uploaded By</label><input type="text" id="softUploadedBy" class="admin-input" placeholder="e.g., Nexsoftx Team"></div>
+                                <div class="dash-form-group"><label>Change Log Link</label><input type="url" id="softChangelog" class="admin-input" placeholder="https://example.com/whats-new"></div>
                                 <div class="dash-form-group"><label>Direct Download Link</label><input type="url" id="softLink" class="admin-input" placeholder="https://drive.google.com/..." required></div>
+                            </div>
+
+                            <div class="dash-form-group">
+                                <label>Uploaded By</label>
+                                <input type="text" id="softUploadedBy" class="admin-input" placeholder="e.g., Nexsoftx Team">
                             </div>
 
                             <div class="dash-form-group" style="margin-bottom: 25px;">
@@ -294,9 +346,9 @@
                             <thead>
                                 <tr>
                                     <th>Software Name</th>
-                                    <th>Platform</th>
+                                    <th>Platform & Section</th>
+                                    <th>Top Note</th>
                                     <th>Date Published</th>
-                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -363,7 +415,7 @@
                 <!-- ========================================== -->
                 <div id="AdminSettings" class="tab-content">
                     
-                    <!-- 🟢 নিজের প্রোফাইল আপডেট কার্ড -->
+                    <!-- 🟢 ১. নিজের প্রোফাইল আপডেট কার্ড -->
                     <div class="upload-card" style="margin-bottom: 35px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;">
                             <div>
@@ -395,7 +447,40 @@
                         </form>
                     </div>
 
-                    <!-- 🟢 সাব-অ্যাডমিন ম্যানেজমেন্ট কার্ড (কেবল মাস্টার অ্যাডমিনের জন্য) -->
+                    <!-- 🟢 ২. গ্লোবাল ওয়েবসাইট Top Note (Notice Bar) কার্ড -->
+                    <div class="upload-card" style="margin-bottom: 35px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
+                        <div style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;">
+                            <h2 style="margin: 0; font-size: 1.3rem; color: #0f172a; font-weight: 700;">Global Website Top Note (Notice Bar)</h2>
+                            <p style="color: #64748b; font-size: 0.88rem; margin-top: 4px;">ওয়েবসাইটের একদম ওপরে সব ভিজিটরের জন্য জরুরি নোটিশ বা অ্যানাউন্সমেন্ট সেট করুন।</p>
+                        </div>
+                        
+                        <form id="globalTopNoteForm">
+                            <div class="dash-form-group" style="margin-bottom: 15px;">
+                                <label style="font-weight: 600; color: #334155; margin-bottom: 8px; display: block;">Top Note Text</label>
+                                <input type="text" id="globalTopNoteText" class="admin-input" placeholder="e.g., 🚀 Welcome to Nexsoftx! All direct download links are verified and virus-free." required>
+                            </div>
+                            
+                            <div class="form-row" style="margin-bottom: 20px; align-items: center;">
+                                <div class="dash-form-group">
+                                    <label style="font-weight: 600; color: #334155; margin-bottom: 8px; display: block;">Banner Style</label>
+                                    <select id="globalTopNoteType" class="admin-input">
+                                        <option value="success">Green (Update/Success)</option>
+                                        <option value="info">Blue (General Notice)</option>
+                                        <option value="warning">Orange (Important Alert)</option>
+                                        <option value="dark">Dark Slate</option>
+                                    </select>
+                                </div>
+                                <div class="dash-form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 25px;">
+                                    <input type="checkbox" id="globalTopNoteEnabled" style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
+                                    <label for="globalTopNoteEnabled" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #0f172a;">Enable Top Note Banner</label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-publish" style="width: auto; padding: 12px 28px; background: #0f172a; border-radius: 8px; font-weight: 700;">Save Top Note</button>
+                        </form>
+                    </div>
+
+                    <!-- 🟢 ৩. সাব-অ্যাডমিন ম্যানেজমেন্ট কার্ড (কেবল মাস্টার অ্যাডমিনের জন্য) -->
                     <div class="upload-card" id="masterAdminSection" style="display: none; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
                         <div style="margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;">
                             <h2 style="margin: 0; font-size: 1.3rem; color: #0f172a; font-weight: 700;">Manage Sub-Admins</h2>
@@ -428,10 +513,6 @@
                         </div>
                     </div>
                 </div>
-
-            </div>
-        </main>
-    </div>
 
     <!-- ========================================== -->
     <!-- 📌 ৯. JavaScript Code (UI Interactions) -->
