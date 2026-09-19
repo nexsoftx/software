@@ -1,5 +1,5 @@
 // ==========================================
-// 🛡️ NEXSOFTX - ADMIN PANEL MASTER JS
+// 🛡️ NEXSOFTX - ADMIN PANEL MASTER JS (100% FIXED)
 // ==========================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -20,7 +20,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // -----------------------------------------------------
-// 🎨 ১. Custom Admin Alert Modal
+// 🎨 ১. Custom Admin Alert Modal (Animated SVG)
 // -----------------------------------------------------
 window.showAdminModal = function(type, title, message, confirmCallback = null) {
     const existingModal = document.getElementById('customModal');
@@ -29,27 +29,34 @@ window.showAdminModal = function(type, title, message, confirmCallback = null) {
     let iconSvg = '';
     let iconBgClass = '';
     let btnClass = 'modal-btn-confirm';
-    let btnText = 'OK, Got it!';
+    let btnText = 'OK';
     let isConfirm = false;
 
     if (type === 'success') {
         iconBgClass = 'icon-bg-success';
-        iconSvg = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+        iconSvg = `
+            <svg class="modal-svg-icon" viewBox="0 0 52 52">
+                <circle class="modal-svg-circle" cx="26" cy="26" r="23" fill="none"/>
+                <path class="modal-svg-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>`;
     } else if (type === 'confirm' || type === 'warning' || type === 'security') {
         isConfirm = type === 'confirm';
         iconBgClass = 'icon-bg-warning';
         btnClass = isConfirm ? 'modal-btn-danger' : 'modal-btn-confirm';
-        btnText = isConfirm ? 'Yes, Confirm' : 'Understood';
-        iconSvg = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
-        
-        if(type === 'security') {
-            iconBgClass = 'icon-bg-error';
-            iconSvg = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>`;
-        }
+        btnText = isConfirm ? 'Yes, Confirm' : 'OK';
+        iconSvg = `
+            <svg class="modal-svg-icon" viewBox="0 0 52 52">
+                <circle class="modal-svg-circle" cx="26" cy="26" r="23" fill="none"/>
+                <path class="modal-svg-exclamation" fill="none" d="M26 15v14m0 6v2"/>
+            </svg>`;
     } else if (type === 'error') {
         iconBgClass = 'icon-bg-error';
         btnClass = 'modal-btn-danger';
-        iconSvg = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+        iconSvg = `
+            <svg class="modal-svg-icon" viewBox="0 0 52 52">
+                <circle class="modal-svg-circle" cx="26" cy="26" r="23" fill="none"/>
+                <path class="modal-svg-cross" fill="none" d="M17 17l18 18M35 17L17 35"/>
+            </svg>`;
     }
 
     const modalHTML = `
@@ -69,21 +76,28 @@ window.showAdminModal = function(type, title, message, confirmCallback = null) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     const modal = document.getElementById('customModal');
     
-    setTimeout(() => modal.classList.add('show'), 10);
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+
+    const closeModal = (callback) => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+            if (callback) callback();
+        }, 250);
+    };
 
     document.getElementById('modalConfirmBtn').addEventListener('click', () => {
-        modal.classList.remove('show');
-        setTimeout(() => modal.remove(), 300);
-        if (confirmCallback) confirmCallback();
+        closeModal(confirmCallback);
     });
 
     if (isConfirm) {
         document.getElementById('modalCancelBtn').addEventListener('click', () => {
-            modal.classList.remove('show');
-            setTimeout(() => modal.remove(), 300);
+            closeModal();
         });
     }
-}
+};
 
 // -----------------------------------------------------
 // 🛡️ ২. Admin Security Lock (Master & Sub-Admin)
@@ -91,7 +105,6 @@ window.showAdminModal = function(type, title, message, confirmCallback = null) {
 const currentPath = window.location.pathname;
 const isAdminLoginPage = currentPath.includes('admin-login');
 
-// 🟢 ম্যাজিক ফিক্স: পেজ লোড হওয়ার আগেই UI হাইড করে রাখা (যাতে কেউ লিংক দিয়ে ঢুকলে ব্লিঙ্ক না করে)
 if (currentPath.includes('admin') && !isAdminLoginPage) {
     document.documentElement.style.display = 'none';
 }
@@ -115,7 +128,6 @@ onAuthStateChanged(auth, async (user) => {
             }
         }
 
-        // যদি অ্যাডমিন না হয়, তবে কিক করে বের করে দেবে
         if (!isMaster && !isSubAdmin) {
             if (currentPath.includes('admin')) {
                 await signOut(auth);
@@ -124,11 +136,10 @@ onAuthStateChanged(auth, async (user) => {
             return;
         }
 
-        // অ্যাডমিন হলে পেজ শো করবে
         if (isAdminLoginPage) {
             window.location.href = "admin.html";
         } else {
-            document.documentElement.style.display = ''; // 🟢 অথেনটিকেশন সফল হলে তবেই UI শো করবে
+            document.documentElement.style.display = '';
             
             if(document.getElementById('adminNameDisplay')) {
                 document.getElementById('adminNameDisplay').innerText = user.displayName || (isMaster ? "Master Admin" : "Sub Admin");
@@ -138,19 +149,19 @@ onAuthStateChanged(auth, async (user) => {
             window.loadAdminTickets();
             window.loadAdminNotifications();
             window.loadAdminSettingsData(user);
+            window.loadGlobalTopNote();
         }
     } else {
-        // কেউ লগইন ছাড়া ঢুকতে চাইলে সাথে সাথে লগইন পেজে পাঠাবে
         if (currentPath.includes('admin') && !isAdminLoginPage) {
             window.location.href = "admin-login.html";
         } else {
-            document.documentElement.style.display = ''; // অ্যাডমিন লগইন পেজের জন্য UI শো করবে
+            document.documentElement.style.display = '';
         }
     }
 });
 
 // -----------------------------------------------------
-// 🔐 ৩. Secret Admin Login Logic (Master & Sub-Admin)
+// 🔐 ৩. Secret Admin Login Logic
 // -----------------------------------------------------
 const adminLoginForm = document.getElementById('adminLoginForm');
 if (adminLoginForm) {
@@ -182,17 +193,29 @@ if (adminLoginForm) {
     });
 }
 
-// -----------------------------------------------------
-// 🚀 ৪. Publish & Edit Software Logic
-// -----------------------------------------------------
+// ==========================================
+// 🚀 ৪. Publish & Edit Software Logic (Fixed)
+// ==========================================
 window.currentEditId = null;
 const publishSoftwareForm = document.getElementById('publishSoftwareForm');
+
 if (publishSoftwareForm) {
     publishSoftwareForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // 🟢 সাবমিটের সময় ইনপুট থেকে মান নেওয়া (পাসওয়ার্ডসহ)
+        const name = document.getElementById('softName').value.trim();
         const title = document.getElementById('softTitle').value.trim();
+        const category = document.getElementById('softCategory').value.trim();
+        const pricing = document.getElementById('softPricing').value;
+
         const platform = document.getElementById('softPlatform').value;
+        const section = document.getElementById('softSection') ? document.getElementById('softSection').value : 'trending_software';
+        const topNote = document.getElementById('softTopNote') ? document.getElementById('softTopNote').value.trim() : '';
+
+        const fileName = document.getElementById('softFileName').value.trim();
+        const filePassword = document.getElementById('softPassword') ? document.getElementById('softPassword').value.trim() : ''; // 🟢 ঠিক জায়গায় আনা হলো
+
         const iconUrl = document.getElementById('softIcon').value.trim();
         const bannerUrl = document.getElementById('softBanner').value.trim();
         const version = document.getElementById('softVersion').value.trim();
@@ -201,22 +224,42 @@ if (publishSoftwareForm) {
         const shortDesc = document.getElementById('softShortDesc').value.trim();
         const fullDesc = document.getElementById('fullDescription') ? document.getElementById('fullDescription').innerHTML : '';
         
-        const fileName = document.getElementById('softFileName').value.trim();
         const developer = document.getElementById('softDeveloper').value.trim();
         const license = document.getElementById('softLicense').value.trim();
         const languages = document.getElementById('softLanguages').value.trim();
         const changelog = document.getElementById('softChangelog').value.trim();
         const tags = document.getElementById('softTags').value.trim();
-        const releaseDate = document.getElementById('softReleaseDate').value; // 🟢 নতুন ফিল্ড ডাটা
+        const releaseDate = document.getElementById('softReleaseDate').value;
         
         const manualUploader = document.getElementById('softUploadedBy').value.trim();
         const uploadedBy = manualUploader ? manualUploader : (auth.currentUser ? (auth.currentUser.displayName || "Admin") : "Nexsoftx Team");
 
-        const softwareId = window.currentEditId ? window.currentEditId : title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const softwareId = window.currentEditId ? window.currentEditId : (name || title).toLowerCase().replace(/[^a-z0-9]+/g, '-');
         
         const softwareData = {
-            title, platform, iconUrl, bannerUrl, version, size, downloadLink: link, shortDesc, fullDesc,
-            fileName, developer, license, languages, changelog, tags, uploadedBy, releaseDate
+            name, 
+            title, 
+            category, 
+            pricing,
+            platform, 
+            section, 
+            topNote, 
+            fileName,
+            filePassword, // 🟢 ডেটাবেসে সেভ হবে
+            iconUrl, 
+            bannerUrl, 
+            version, 
+            size, 
+            downloadLink: link, 
+            shortDesc, 
+            fullDesc,
+            developer, 
+            license, 
+            languages, 
+            changelog, 
+            tags, 
+            uploadedBy, 
+            releaseDate
         };
 
         if (!window.currentEditId) {
@@ -226,92 +269,69 @@ if (publishSoftwareForm) {
         try {
             const btn = publishSoftwareForm.querySelector('button[type="submit"]');
             btn.innerHTML = `Processing Data...`;
+            btn.style.pointerEvents = 'none';
             
             await setDoc(doc(db, "software", softwareId), softwareData, { merge: true });
             
-            showAdminModal('success', window.currentEditId ? 'Updated Successfully!' : 'Published Successfully!', `<b>${title}</b> has been saved.`);
+            showAdminModal('success', window.currentEditId ? 'Updated Successfully!' : 'Published Successfully!', `<b>${name}</b> has been saved.`);
             
             publishSoftwareForm.reset();
             if(document.getElementById('fullDescription')) document.getElementById('fullDescription').innerHTML = ''; 
+            if(document.getElementById('softName')) document.getElementById('softName').value = '';
+            if(document.getElementById('softCategory')) document.getElementById('softCategory').value = '';
+            if(document.getElementById('softPricing')) document.getElementById('softPricing').value = 'Free';
+            if(document.getElementById('softPassword')) document.getElementById('softPassword').value = ''; // 🟢 রিসেট
+            if(document.getElementById('softSection')) document.getElementById('softSection').value = 'trending_software';
+            if(document.getElementById('softTopNote')) document.getElementById('softTopNote').value = '';
             window.currentEditId = null;
-            document.querySelector('#Upload h2').innerText = 'Publish New Software';
+            
+            const uploadHeader = document.querySelector('#Upload h2');
+            if (uploadHeader) uploadHeader.innerText = 'Publish New Software';
             btn.innerHTML = `Publish to Live Site`;
+            btn.style.pointerEvents = 'auto';
             
             window.loadAdminData();
         } catch (error) {
             showAdminModal('error', 'Action Failed', error.message);
+            const btn = publishSoftwareForm.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.innerHTML = window.currentEditId ? `Update Software` : `Publish to Live Site`;
+                btn.style.pointerEvents = 'auto';
+            }
         }
     });
 }
 
-// -----------------------------------------------------
-// Edit ফাংশন আপডেট
-// -----------------------------------------------------
-window.editSoftware = async function(softwareId) {
-    try {
-        const docSnap = await getDoc(doc(db, "software", softwareId));
-        if(docSnap.exists()) {
-            const data = docSnap.data();
-            
-            document.getElementById('softTitle').value = data.title || '';
-            document.getElementById('softPlatform').value = data.platform || 'Windows';
-            document.getElementById('softIcon').value = data.iconUrl || '';
-            document.getElementById('softBanner').value = data.bannerUrl || '';
-            document.getElementById('softVersion').value = data.version || '';
-            document.getElementById('softSize').value = data.size || '';
-            document.getElementById('softLink').value = data.downloadLink || '';
-            document.getElementById('softShortDesc').value = data.shortDesc || '';
-            if(document.getElementById('fullDescription')) document.getElementById('fullDescription').innerHTML = data.fullDesc || '';
-
-            if(document.getElementById('softFileName')) document.getElementById('softFileName').value = data.fileName || '';
-            if(document.getElementById('softDeveloper')) document.getElementById('softDeveloper').value = data.developer || '';
-            if(document.getElementById('softLicense')) document.getElementById('softLicense').value = data.license || '';
-            if(document.getElementById('softLanguages')) document.getElementById('softLanguages').value = data.languages || '';
-            if(document.getElementById('softChangelog')) document.getElementById('softChangelog').value = data.changelog || '';
-            if(document.getElementById('softTags')) document.getElementById('softTags').value = data.tags || '';
-            if(document.getElementById('softUploadedBy')) document.getElementById('softUploadedBy').value = data.uploadedBy || '';
-            
-            // 🟢 রিলিজ ডেট এডিটর ফিল্ডে বসানো
-            if(document.getElementById('softReleaseDate')) document.getElementById('softReleaseDate').value = data.releaseDate || '';
-
-            window.currentEditId = softwareId;
-            document.querySelector('#Upload h2').innerText = 'Edit Software: ' + data.title;
-            document.querySelector('#publishSoftwareForm button[type="submit"]').innerHTML = `Update Software`;
-
-            if (typeof openAdminTab === "function") openAdminTab('Upload');
-        }
-    } catch (error) {
-        showAdminModal('error', 'Error!', error.message);
-    }
-}
-
-// -----------------------------------------------------
+// ==========================================
 // 📊 ৫. Load Dashboard Stats & Software Table
-// -----------------------------------------------------
+// ==========================================
+const sectionLabels = {
+    trending_software: 'Trending Software',
+    trending_apps: 'Trending Apps',
+    get_it_done_fast: 'Get It Done Fast',
+    best_selling_games: 'Best Selling Games',
+    must_have_apps: 'Must-have Apps',
+    spotlight_games: 'Spotlight Games',
+    streaming_shelf: 'Streaming Shelf'
+};
+
 window.loadAdminData = async function() {
     const manageSoftwareList = document.getElementById('manageSoftwareList');
     const recentSoftwareList = document.getElementById('recentSoftwareList');
     const totalSoftwareCount = document.getElementById('totalSoftwareCount');
     const totalDownloadsCount = document.getElementById('totalDownloadsCount');
     const totalUsersCount = document.getElementById('totalUsersCount');
-    const totalTicketsCount = document.getElementById('totalTicketsCount');
     
     try {
         const softwareSnapshot = await getDocs(collection(db, "software"));
         if (totalSoftwareCount) totalSoftwareCount.innerText = softwareSnapshot.size;
 
-        const usersSnapshot = await getDocs(collection(db, "users"));
-        if (totalUsersCount) totalUsersCount.innerText = usersSnapshot.size;
-
-        const ticketsSnapshot = await getDocs(collectionGroup(db, "tickets"));
-        if (totalTicketsCount) totalTicketsCount.innerText = ticketsSnapshot.size;
-
         const allSoftware = [];
         let realTotalDownloads = 0; 
 
-        softwareSnapshot.forEach(doc => {
-            const data = doc.data();
-            allSoftware.push({ id: doc.id, ...data });
+        softwareSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            allSoftware.push({ id: docSnap.id, ...data });
             realTotalDownloads += (data.downloadCount || 0); 
         });
 
@@ -321,18 +341,35 @@ window.loadAdminData = async function() {
 
         allSoftware.sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
 
+        // Manage Software টেবিল
         if (manageSoftwareList) {
             if (allSoftware.length === 0) {
                 manageSoftwareList.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">No software published yet.</td></tr>`;
             } else {
                 let html = "";
                 allSoftware.forEach((data) => {
-                    const dateStr = new Date(data.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const dateStr = data.publishedAt ? new Date(data.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+                    const secText = sectionLabels[data.section] || 'Trending Software';
+                    const topNoteBadge = data.topNote 
+                        ? `<span style="background:#fef3c7; color:#b45309; padding:4px 8px; border-radius:6px; font-size:0.78rem; font-weight:700;">${escapeHtmlText(data.topNote)}</span>` 
+                        : `<span style="color:#94a3b8; font-size:0.8rem;">None</span>`;
+
+                    const displayName = data.name || data.title;
+
                     html += `<tr>
-                        <td style="font-weight: 600; display:flex; align-items:center; gap:10px;"><img src="${data.iconUrl}" style="width:32px; height:32px; border-radius:6px; object-fit:cover; border: 1px solid #e2e8f0;">${data.title}</td>
-                        <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-weight:600; color:#475569;">${data.platform}</span></td>
+                        <td style="font-weight: 600; display:flex; align-items:center; gap:10px;">
+                            <img src="${data.iconUrl || 'assets/favicon.png'}" style="width:34px; height:34px; border-radius:6px; object-fit:cover; border: 1px solid #e2e8f0;">
+                            <div>
+                                <div style="color:#0f172a;">${escapeHtmlText(displayName)}</div>
+                                <div style="font-size:0.75rem; color:#64748b;">${escapeHtmlText(data.category || 'Software')} • ${escapeHtmlText(data.pricing || 'Free')}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="background:#f1f5f9; padding:3px 8px; border-radius:6px; font-weight:600; color:#475569; font-size:0.82rem; margin-right:4px;">${data.platform || 'Windows'}</span>
+                            <span style="background:#eff6ff; padding:3px 8px; border-radius:6px; font-weight:600; color:#2563eb; font-size:0.82rem;">${secText}</span>
+                        </td>
+                        <td>${topNoteBadge}</td>
                         <td>${dateStr}</td>
-                        <td><span class="admin-badge badge-active" style="background:#ecfdf5; color:#10b981; padding:4px 10px; border-radius:20px;">Live</span></td>
                         <td>
                             <button class="action-btn btn-edit" onclick="editSoftware('${data.id}')">Edit</button>
                             <button class="action-btn btn-delete" onclick="deleteSoftware('${data.id}')">Remove</button>
@@ -342,16 +379,18 @@ window.loadAdminData = async function() {
             }
         }
 
+        // Dashboard Recent Software টেবিল
         if (recentSoftwareList) {
             if (allSoftware.length === 0) {
                 recentSoftwareList.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">No recent activity.</td></tr>`;
             } else {
                 let html = "";
                 allSoftware.slice(0, 5).forEach((data) => {
-                    const dateStr = new Date(data.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const dateStr = data.publishedAt ? new Date(data.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+                    const displayName = data.name || data.title;
                     html += `<tr>
-                        <td style="font-weight: 600; display:flex; align-items:center; gap:10px;"><img src="${data.iconUrl}" style="width:32px; height:32px; border-radius:6px; object-fit:cover; border: 1px solid #e2e8f0;">${data.title}</td>
-                        <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600; color:#475569;">${data.platform}</span></td>
+                        <td style="font-weight: 600; display:flex; align-items:center; gap:10px;"><img src="${data.iconUrl || 'assets/favicon.png'}" style="width:32px; height:32px; border-radius:6px; object-fit:cover; border: 1px solid #e2e8f0;">${escapeHtmlText(displayName)}</td>
+                        <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:0.85rem; font-weight:600; color:#475569;">${data.platform || 'Windows'}</span></td>
                         <td>${dateStr}</td>
                         <td><span class="admin-badge badge-active" style="background:#ecfdf5; color:#10b981; padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:bold;">Live</span></td>
                         <td><button class="action-btn btn-edit" onclick="editSoftware('${data.id}')">Edit</button></td></tr>`;
@@ -359,16 +398,51 @@ window.loadAdminData = async function() {
                 recentSoftwareList.innerHTML = html;
             }
         }
-    } catch (error) { console.error("Error loading stats:", error); }
-}
+    } catch (error) { 
+        console.error("Error loading software:", error); 
+    }
 
+    try {
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        if (totalUsersCount) totalUsersCount.innerText = usersSnapshot.size;
+    } catch (error) {
+        console.error("Error loading users count:", error);
+    }
+};
+
+// 🟢 একটিমাত্র সঠিক editSoftware ফাংশন (পাসওয়ার্ডসহ সব ডাটা লোড হবে)
 window.editSoftware = async function(softwareId) {
     try {
         const docSnap = await getDoc(doc(db, "software", softwareId));
-        if(docSnap.exists()) {
+        if (docSnap.exists()) {
             const data = docSnap.data();
-            document.getElementById('softTitle').value = data.title || '';
+            
+            if (document.getElementById('softName')) {
+                document.getElementById('softName').value = data.name || data.title || '';
+            }
+            if (document.getElementById('softTitle')) {
+                document.getElementById('softTitle').value = data.title || data.name || '';
+            }
+            if (document.getElementById('softCategory')) {
+                document.getElementById('softCategory').value = data.category || (data.tags ? data.tags.split(',')[0].trim() : '') || 'Software';
+            }
+            if (document.getElementById('softPricing')) {
+                document.getElementById('softPricing').value = data.pricing || 'Free';
+            }
+
+            // 🟢 ফাইলের পাসওয়ার্ড থাকলে লোড হবে (না থাকলে খালি থাকবে)
+            if (document.getElementById('softPassword')) {
+                document.getElementById('softPassword').value = data.filePassword || '';
+            }
+
             document.getElementById('softPlatform').value = data.platform || 'Windows';
+            if (document.getElementById('softSection')) {
+                document.getElementById('softSection').value = data.section || 'trending_software';
+            }
+            if (document.getElementById('softTopNote')) {
+                document.getElementById('softTopNote').value = data.topNote || '';
+            }
+
             document.getElementById('softIcon').value = data.iconUrl || '';
             document.getElementById('softBanner').value = data.bannerUrl || '';
             document.getElementById('softVersion').value = data.version || '';
@@ -377,25 +451,36 @@ window.editSoftware = async function(softwareId) {
             document.getElementById('softShortDesc').value = data.shortDesc || '';
             if(document.getElementById('fullDescription')) document.getElementById('fullDescription').innerHTML = data.fullDesc || '';
 
-            // নতুন ফিল্ডগুলো এডিটের সময় লোড হবে
-            if(document.getElementById('softFileName')) document.getElementById('softFileName').value = data.fileName || '';
-            if(document.getElementById('softDeveloper')) document.getElementById('softDeveloper').value = data.developer || '';
-            if(document.getElementById('softLicense')) document.getElementById('softLicense').value = data.license || '';
-            if(document.getElementById('softLanguages')) document.getElementById('softLanguages').value = data.languages || '';
-            if(document.getElementById('softChangelog')) document.getElementById('softChangelog').value = data.changelog || '';
-            if(document.getElementById('softTags')) document.getElementById('softTags').value = data.tags || '';
+            document.getElementById('softFileName').value = data.fileName || '';
+            document.getElementById('softDeveloper').value = data.developer || '';
+            document.getElementById('softLicense').value = data.license || '';
+            document.getElementById('softLanguages').value = data.languages || '';
+            document.getElementById('softChangelog').value = data.changelog || '';
+            document.getElementById('softTags').value = data.tags || '';
+            document.getElementById('softUploadedBy').value = data.uploadedBy || '';
+            document.getElementById('softReleaseDate').value = data.releaseDate || '';
 
             window.currentEditId = softwareId;
-            document.querySelector('#Upload h2').innerText = 'Edit Software: ' + data.title;
-            document.querySelector('#publishSoftwareForm button[type="submit"]').innerHTML = `Update Software`;
+            
+            const uploadHeader = document.querySelector('#Upload h2');
+            if (uploadHeader) uploadHeader.innerText = 'Edit Software: ' + (data.name || data.title);
+            
+            const submitBtn = document.querySelector('#publishSoftwareForm button[type="submit"]');
+            if (submitBtn) submitBtn.innerHTML = `Update Software`;
+
+            // সাইজ হিন্ট আপডেট
+            if (typeof window.updateImageSizeHints === 'function') {
+                window.updateImageSizeHints();
+            }
 
             if (typeof openAdminTab === "function") openAdminTab('Upload');
         }
     } catch (error) {
         showAdminModal('error', 'Error!', error.message);
     }
-}
+};
 
+// 🟢 সফটওয়্যার রিমুভ ফাংশন
 window.deleteSoftware = async function(softwareId) {
     showAdminModal('confirm', 'Delete Software?', 'Are you sure you want to remove this software?', async () => {
         try {
@@ -406,10 +491,10 @@ window.deleteSoftware = async function(softwareId) {
             showAdminModal('error', 'Delete Failed', error.message);
         }
     });
-}
+};
 
 // ==========================================
-// 👥 ৮. User Management with 30-Item Pagination & BAN SYSTEM
+// 👥 ৬. User Management
 // ==========================================
 window.allUsersData = [];
 window.currentUsersPage = 1;
@@ -429,7 +514,7 @@ window.loadAdminUsers = async function() {
         window.allUsersData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         window.renderUsersPage(1); 
     } catch (error) { console.error("Error loading users:", error); }
-}
+};
 
 window.renderUsersPage = function(pageNumber) {
     window.currentUsersPage = pageNumber;
@@ -451,7 +536,6 @@ window.renderUsersPage = function(pageNumber) {
     pageUsers.forEach((userData) => {
         const userName = userData.name || userData.displayName || "User (" + userData.id.substring(0,6) + "...)";
         const userEmail = userData.email || "No email provided";
-        
         const isBanned = userData.status === 'banned';
         const statusBadge = isBanned 
             ? `<span class="admin-badge" style="background:#fef2f2; color:#ef4444; padding:4px 10px; border-radius:20px; font-weight:bold;">Banned</span>`
@@ -463,8 +547,8 @@ window.renderUsersPage = function(pageNumber) {
         html += `
             <tr>
                 <td style="font-weight: 600; color: #334155;">
-                    <div style="font-size: 1rem; color: #0f172a;">${userName}</div>
-                    <div style="font-size: 0.8rem; color: #64748b; font-weight: normal;">${userEmail}</div>
+                    <div style="font-size: 1rem; color: #0f172a;">${escapeHtmlText(userName)}</div>
+                    <div style="font-size: 0.8rem; color: #64748b; font-weight: normal;">${escapeHtmlText(userEmail)}</div>
                 </td>
                 <td>${statusBadge}</td>
                 <td style="display:flex; gap:8px;">
@@ -490,7 +574,7 @@ window.renderUsersPage = function(pageNumber) {
         }
         paginationContainer.innerHTML = btnHtml;
     }
-}
+};
 
 window.openEditUserModal = function(userId, currentName, currentEmail) {
     const existingModal = document.getElementById('editUserModal');
@@ -529,7 +613,7 @@ window.openEditUserModal = function(userId, currentName, currentEmail) {
             window.loadAdminUsers();
         } catch (error) { showAdminModal('error', 'Update Failed', error.message); }
     });
-}
+};
 
 window.toggleBanUser = async function(userId, currentStatus) {
     const newStatus = currentStatus === 'banned' ? 'active' : 'banned';
@@ -538,49 +622,50 @@ window.toggleBanUser = async function(userId, currentStatus) {
     showAdminModal('confirm', `${actionWord} User?`, `Are you sure you want to ${actionWord.toLowerCase()} this user?`, async () => {
         try {
             await updateDoc(doc(db, "users", userId), { status: newStatus });
-            showAdminModal('success', 'Status Updated!', `The user has been successfully ${newStatus === 'banned' ? 'banned' : 'unbanned'}.`);
+            showAdminModal('success', 'Status Updated!', `User has been successfully ${newStatus === 'banned' ? 'banned' : 'unbanned'}.`);
             window.loadAdminUsers();
         } catch (error) {
             showAdminModal('error', 'Action Failed', error.message);
         }
     });
-}
+};
 
 window.deleteUser = async function(userId) {
-    showAdminModal('confirm', 'Remove Data?', 'Are you sure you want to delete this user data from Firestore? This does not delete authentication.', async () => {
+    showAdminModal('confirm', 'Remove Data?', 'Are you sure you want to delete this user data from Firestore?', async () => {
         try {
             await deleteDoc(doc(db, "users", userId));
-            showAdminModal('success', 'Data Removed!', 'User data has been successfully deleted.');
+            showAdminModal('success', 'Data Removed!', 'User data has been deleted.');
             window.loadAdminUsers(); 
         } catch (error) { showAdminModal('error', 'Action Failed', error.message); }
     });
-}
+};
 
 // ==========================================
-// 🎫 ১১. Support Tickets Management (Max 20 per Page & Reply)
+// 🎫 ৭. Support Tickets Management
 // ==========================================
 window.allTicketsData = [];
 window.currentTicketsPage = 1;
-const TICKETS_PER_PAGE = 20; // সর্বোচ্চ ২০টি টিকেট প্রতি পেজে
+const TICKETS_PER_PAGE = 20;
 
 window.loadAdminTickets = async function() {
     const totalTicketsCount = document.getElementById('totalTicketsCount');
+    const manageTicketsList = document.getElementById('manageTicketsList');
+    window.allTicketsData = [];
+
     try {
         const ticketsSnapshot = await getDocs(collectionGroup(db, "tickets"));
-        if (totalTicketsCount) totalTicketsCount.innerText = ticketsSnapshot.size;
-
-        window.allTicketsData = [];
         ticketsSnapshot.forEach((docSnap) => {
-            const userId = docSnap.ref.parent.parent.id; 
+            const userId = docSnap.ref.parent.parent ? docSnap.ref.parent.parent.id : 'Unknown User';
             window.allTicketsData.push({ id: docSnap.id, userId, ...docSnap.data() });
         });
 
+        if (totalTicketsCount) totalTicketsCount.innerText = window.allTicketsData.length;
         window.allTicketsData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         window.renderTicketsPage(1); 
     } catch (error) { 
-        console.error("Error loading tickets:", error); 
+        console.error("Ticket Fetch Error:", error); 
     }
-}
+};
 
 window.renderTicketsPage = function(pageNumber) {
     window.currentTicketsPage = pageNumber;
@@ -602,25 +687,22 @@ window.renderTicketsPage = function(pageNumber) {
     pageTickets.forEach((t) => {
         const dateStr = t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
         const isOpen = t.status === 'Open';
-        
         const statusBadge = isOpen 
             ? `<span class="admin-badge" style="background:#fffbeb; color:#f59e0b; padding:4px 10px; border-radius:20px; font-weight:bold;">Pending</span>`
             : `<span class="admin-badge" style="background:#ecfdf5; color:#10b981; padding:4px 10px; border-radius:20px; font-weight:bold;">Solved</span>`;
 
         html += `
             <tr>
+                <td><div style="font-size: 0.75rem; color: #64748b; font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; display: inline-block;">${t.userId.substring(0, 10)}...</div></td>
                 <td>
-                    <div style="font-size: 0.75rem; color: #64748b; font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; display: inline-block;">${t.userId.substring(0, 10)}...</div>
-                </td>
-                <td>
-                    <div style="font-weight: 600; color: #0f172a; margin-bottom: 3px;">${t.subject}</div>
-                    <div style="font-size: 0.85rem; color: #475569; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.message}</div>
-                    ${t.adminReply ? `<div style="font-size: 0.8rem; color: #10b981; margin-top: 4px; font-weight: 600;">Reply: ${t.adminReply}</div>` : ''}
+                    <div style="font-weight: 600; color: #0f172a; margin-bottom: 3px;">${escapeHtmlText(t.subject || '')}</div>
+                    <div style="font-size: 0.85rem; color: #475569; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtmlText(t.message || '')}</div>
+                    ${t.adminReply ? `<div style="font-size: 0.8rem; color: #10b981; margin-top: 4px; font-weight: 600;">Reply: ${escapeHtmlText(t.adminReply)}</div>` : ''}
                     <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 3px;">Submitted on: ${dateStr}</div>
                 </td>
                 <td>${statusBadge}</td>
                 <td style="display:flex; gap:8px;">
-                    <button class="action-btn btn-edit" onclick="openTicketReplyModal('${t.userId}', '${t.id}', '${escapeTicketText(t.subject)}', '${escapeTicketText(t.message)}', '${escapeTicketText(t.adminReply || '')}')">Reply</button>
+                    <button class="action-btn btn-edit" onclick="openTicketReplyById('${t.id}')">Reply</button>
                     <button class="action-btn btn-delete" onclick="deleteTicket('${t.userId}', '${t.id}')">Delete</button>
                 </td>
             </tr>`;
@@ -635,13 +717,19 @@ window.renderTicketsPage = function(pageNumber) {
             btnHtml += `<span style="font-size:0.85rem; color:#64748b; margin-right:10px;">Page ${pageNumber} of ${totalPages}</span>`;
             for (let i = 1; i <= totalPages; i++) {
                 const activeStyle = i === pageNumber ? "background:#0f172a; color:white;" : "background:#f1f5f9; color:#475569;";
-                btnHtml += `<button onclick="renderTicketsPage(${i})" style="border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:bold; transition:0.3s; ${activeStyle}">${i}</button>`;
+                btnHtml += `<button onclick="renderUsersPage(${i})" style="border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:bold; transition:0.3s; ${activeStyle}">${i}</button>`;
             }
             btnHtml += `</div>`;
         }
         paginationContainer.innerHTML = btnHtml;
     }
-}
+};
+
+window.openTicketReplyById = function(ticketId) {
+    const t = window.allTicketsData.find(item => item.id === ticketId);
+    if (!t) return;
+    window.openTicketReplyModal(t.userId, t.id, t.subject, t.message, t.adminReply || '');
+};
 
 window.openTicketReplyModal = function(userId, ticketId, subject, message, existingReply) {
     const existingModal = document.getElementById('ticketReplyModal');
@@ -651,14 +739,12 @@ window.openTicketReplyModal = function(userId, ticketId, subject, message, exist
         <div class="custom-modal-overlay show" id="ticketReplyModal">
             <div class="custom-modal-box" style="text-align: left; max-width: 480px;">
                 <h3 class="custom-modal-title" style="margin-bottom: 10px;">Reply to Support Ticket</h3>
-                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;"><b>Subject:</b> ${subject}</p>
-                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; color: #334155; border: 1px solid #e2e8f0;">
-                    <b>User Message:</b><br>${message}
-                </div>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;"><b>Subject:</b> <span id="modalTicketSubject"></span></p>
+                <div id="modalTicketMessage" style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; color: #334155; border: 1px solid #e2e8f0; white-space: pre-wrap; max-height: 150px; overflow-y: auto;"></div>
                 <form id="adminReplyForm">
                     <div style="margin-bottom: 20px;">
                         <label style="display:block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 5px;">Admin Solution / Message</label>
-                        <textarea id="adminReplyText" class="admin-textarea" rows="4" placeholder="Write your response here..." required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">${existingReply}</textarea>
+                        <textarea id="adminReplyText" class="admin-textarea" rows="4" placeholder="Write your response here..." required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;"></textarea>
                     </div>
                     <div class="custom-modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
                         <button type="button" class="modal-btn modal-btn-cancel" onclick="document.getElementById('ticketReplyModal').remove()">Cancel</button>
@@ -669,6 +755,10 @@ window.openTicketReplyModal = function(userId, ticketId, subject, message, exist
         </div>`;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+    document.getElementById('modalTicketSubject').textContent = subject || '';
+    document.getElementById('modalTicketMessage').textContent = message || '';
+    document.getElementById('adminReplyText').value = existingReply || '';
+
     document.getElementById('adminReplyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const replyText = document.getElementById('adminReplyText').value.trim();
@@ -678,33 +768,38 @@ window.openTicketReplyModal = function(userId, ticketId, subject, message, exist
                 status: "Solved" 
             });
             document.getElementById('ticketReplyModal').remove();
-            showAdminModal('success', 'Reply Sent!', 'Your message has been sent to the user successfully.');
+            showAdminModal('success', 'Reply Sent!', 'Your message has been sent to the user.');
             window.loadAdminTickets();
         } catch (error) { 
             showAdminModal('error', 'Action Failed', error.message); 
         }
     });
-}
+};
 
-function escapeTicketText(text) {
+function escapeHtmlText(text) {
     if (!text) return '';
-    return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 window.deleteTicket = async function(userId, ticketId) {
     showAdminModal('confirm', 'Delete Ticket?', 'Are you sure you want to remove this support ticket?', async () => {
         try {
             await deleteDoc(doc(db, "users", userId, "tickets", ticketId));
-            showAdminModal('success', 'Deleted!', 'Support ticket has been removed.');
+            showAdminModal('success', 'Deleted!', 'Support ticket removed.');
             window.loadAdminTickets();
         } catch (error) {
             showAdminModal('error', 'Delete Failed', error.message);
         }
     });
-}
+};
 
 // ==========================================
-// 🔔 ১২. Admin Notification System (Signup & Ticket)
+// 🔔 ৮. Admin Notifications
 // ==========================================
 window.toggleNotificationDrawer = function() {
     const drawer = document.getElementById('notificationDrawer');
@@ -715,7 +810,7 @@ window.toggleNotificationDrawer = function() {
             window.loadAdminNotifications();
         }
     }
-}
+};
 
 window.loadAdminNotifications = async function() {
     const container = document.getElementById('notificationListContainer');
@@ -789,23 +884,21 @@ window.loadAdminNotifications = async function() {
                         <p style="font-size: 0.82rem; color: #475569; margin: 0 0 5px 0; line-height: 1.4;">${n.desc}</p>
                         <span style="font-size: 0.72rem; color: #94a3b8;">${dateStr}</span>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
         container.innerHTML = html;
-
     } catch (error) {
         console.error("Error loading notifications:", error);
     }
-}
+};
 
 window.clearAllNotifications = function() {
     localStorage.setItem('adminClearedTime', new Date().getTime());
     window.loadAdminNotifications();
-}
+};
 
 // ==========================================
-// 🛡️ ১৩. Admin Settings & Sub-Admin Management
+// 🛡️ ৯. Admin Settings & Global Top Note
 // ==========================================
 window.loadAdminSettingsData = async function(currentUser) {
     const nameInput = document.getElementById('adminUpdateName');
@@ -837,9 +930,45 @@ window.loadAdminSettingsData = async function(currentUser) {
         }
         if (masterSection) masterSection.style.display = "none";
     }
+};
+
+window.loadGlobalTopNote = async function() {
+    try {
+        const docSnap = await getDoc(doc(db, "settings", "top_note"));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (document.getElementById('globalTopNoteText')) document.getElementById('globalTopNoteText').value = data.text || '';
+            if (document.getElementById('globalTopNoteType')) document.getElementById('globalTopNoteType').value = data.type || 'success';
+            if (document.getElementById('globalTopNoteEnabled')) document.getElementById('globalTopNoteEnabled').checked = !!data.enabled;
+        }
+    } catch (err) {
+        console.error("Failed to load global top note:", err);
+    }
+};
+
+const globalTopNoteForm = document.getElementById('globalTopNoteForm');
+if (globalTopNoteForm) {
+    globalTopNoteForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = document.getElementById('globalTopNoteText').value.trim();
+        const type = document.getElementById('globalTopNoteType').value;
+        const enabled = document.getElementById('globalTopNoteEnabled').checked;
+
+        try {
+            await setDoc(doc(db, "settings", "top_note"), {
+                text,
+                type,
+                enabled,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+
+            showAdminModal('success', 'Top Note Saved!', 'Website global top note has been updated successfully.');
+        } catch (error) {
+            showAdminModal('error', 'Update Failed', error.message);
+        }
+    });
 }
 
-// প্রোফাইল আপডেট ফর্ম সাবমিট
 const adminProfileUpdateForm = document.getElementById('adminProfileUpdateForm');
 if (adminProfileUpdateForm) {
     adminProfileUpdateForm.addEventListener('submit', async (e) => {
@@ -862,11 +991,11 @@ if (adminProfileUpdateForm) {
                 await updatePassword(currentUser, newPassword);
             }
 
-            showAdminModal('success', 'Profile Updated!', 'Your admin account details have been updated successfully.');
+            showAdminModal('success', 'Profile Updated!', 'Your admin account details have been updated.');
             document.getElementById('adminUpdatePassword').value = '';
         } catch (error) {
             if (error.code === 'auth/requires-recent-login') {
-                showAdminModal('security', 'Security Alert', 'To update your password, please log out and log in again to verify your identity.');
+                showAdminModal('security', 'Security Alert', 'Please log out and log in again to verify your identity before changing password.');
             } else {
                 showAdminModal('error', 'Update Failed', error.message);
             }
@@ -874,7 +1003,6 @@ if (adminProfileUpdateForm) {
     });
 }
 
-// মাস্টার অ্যাডমিন কর্তৃক নতুন সাব-অ্যাডমিন ক্রিয়েট করার ফর্ম (Auth & Firestore একসাথে)
 const createSubAdminForm = document.getElementById('createSubAdminForm');
 if (createSubAdminForm) {
     createSubAdminForm.addEventListener('submit', async (e) => {
@@ -903,7 +1031,6 @@ if (createSubAdminForm) {
     });
 }
 
-// রিয়েল-টাইমে সাব-অ্যাডমিন টেবিল লোড করা
 window.loadSubAdminsTable = async function() {
     const tableList = document.getElementById('subAdminTableList');
     if (!tableList) return;
@@ -924,8 +1051,8 @@ window.loadSubAdminsTable = async function() {
             if (admin.email !== MASTER_ADMIN_EMAIL) {
                 html += `
                     <tr>
-                        <td style="font-weight: 600;">${admin.name}</td>
-                        <td>${admin.email}</td>
+                        <td style="font-weight: 600;">${escapeHtmlText(admin.name)}</td>
+                        <td>${escapeHtmlText(admin.email)}</td>
                         <td><span class="admin-badge badge-active">Sub Admin</span></td>
                         <td><button class="action-btn btn-delete" onclick="deleteSubAdmin('${docSnap.id}')">Remove</button></td>
                     </tr>
@@ -936,29 +1063,28 @@ window.loadSubAdminsTable = async function() {
     } catch (error) {
         console.error("Error loading sub-admins:", error);
     }
-}
+};
 
-// সাব-অ্যাডমিন ডিলিট করার লজিক
 window.deleteSubAdmin = async function(docId) {
     showAdminModal('confirm', 'Remove Sub-Admin?', 'Are you sure you want to remove this sub-admin?', async () => {
         try {
             await deleteDoc(doc(db, "admins", docId));
-            showAdminModal('success', 'Removed!', 'Sub-admin has been successfully deleted.');
+            showAdminModal('success', 'Removed!', 'Sub-admin has been removed.');
             window.loadSubAdminsTable();
         } catch (error) {
             showAdminModal('error', 'Action Failed', error.message);
         }
     });
-}
+};
 
 // ==========================================
-// 🚪 ১৪. Secure Admin Logout
+// 🚪 ১০. Admin Logout
 // ==========================================
 const handleAdminLogout = async (e) => {
     e.preventDefault();
     try {
-        await signOut(auth); // 🟢 ফায়ারবেস থেকে সিস্টেম পুরোপুরি লগআউট করে দেবে
-        window.location.href = "admin-login.html"; // 🟢 লগআউট করে সরাসরি অ্যাডমিন লগইন পেজে পাঠাবে
+        await signOut(auth);
+        window.location.href = "admin-login.html";
     } catch (error) {
         console.error("Logout Error:", error);
     }
@@ -966,36 +1092,79 @@ const handleAdminLogout = async (e) => {
 
 const sidebarLogoutBtn = document.getElementById('adminSidebarLogout');
 const dropdownLogoutBtn = document.getElementById('adminDropdownLogout');
-
 if (sidebarLogoutBtn) sidebarLogoutBtn.addEventListener('click', handleAdminLogout);
 if (dropdownLogoutBtn) dropdownLogoutBtn.addEventListener('click', handleAdminLogout);
 
 // ==========================================
-// 🔍 ১৫. Global Admin Search Functionality (100% Fixed)
+// 🔍 ১১. Global Admin Search
 // ==========================================
 document.addEventListener('input', function(e) {
-    // চেক করবে ইউজার অ্যাডমিন সার্চ বারে টাইপ করছে কি না
     const isSearchBar = e.target.closest('.admin-search-bar');
-    
     if (isSearchBar) {
         const searchTerm = e.target.value.toLowerCase().trim();
-        
-        // ড্যাশবোর্ডের সব ডাটা টেবিলের সারিগুলো (rows) একসাথে সিলেক্ট করা
         const allRows = document.querySelectorAll('.admin-table tbody tr');
-        
         allRows.forEach(row => {
-            // "Loading..." বা ফাঁকা মেসেজের সারিগুলো ইগনোর করা
             if (row.cells.length <= 1) return;
-            
-            // সারির ভেতরের সব টেক্সট একসাথে চেক করা
             const rowText = row.textContent.toLowerCase();
-            
-            // সার্চ টার্ম মিললে রো দেখাবে, নাহলে লুকিয়ে ফেলবে
-            if (rowText.includes(searchTerm)) {
-                row.style.display = ''; 
-            } else {
-                row.style.display = 'none'; 
-            }
+            row.style.display = rowText.includes(searchTerm) ? '' : 'none';
         });
     }
 });
+
+// ==========================================
+// 🖼️ 12. Dynamic Image Size Hints by Section
+// ==========================================
+const sectionSizeMap = {
+    trending_software: {
+        icon: 'Recommended: 150x150px (Square 1:1 App Icon)',
+        banner: 'Recommended: 800x450px (Landscape 16:9 Wide Banner)'
+    },
+    trending_apps: {
+        icon: 'Recommended: 150x150px (Square 1:1 App Icon)',
+        banner: 'Recommended: 800x450px (Landscape 16:9 Wide Banner)'
+    },
+    get_it_done_fast: {
+        icon: 'Recommended: 150x150px (Square 1:1 App Logo)',
+        banner: 'Recommended: 600x300px (Wide Card Background Banner)'
+    },
+    best_selling_games: {
+        icon: 'Recommended: 150x150px (Square 1:1 Icon for Details Page)',
+        banner: 'Recommended: 400x550px (Vertical Portrait Poster - 2:3 / 3:4 Ratio)'
+    },
+    must_have_apps: {
+        icon: 'Recommended: 150x150px (Square 1:1 App Icon)',
+        banner: 'Recommended: 800x450px (Landscape 16:9 for Details Page)'
+    },
+    spotlight_games: {
+        icon: 'Recommended: 150x150px (Square 1:1 Icon)',
+        banner: 'Recommended: 600x350px (Landscape Game Art Banner)'
+    },
+    streaming_shelf: {
+        icon: 'Recommended: 150x150px (Square Logo / Icon)',
+        banner: 'Recommended: 600x350px (Landscape Screenshot / Preview)'
+    }
+};
+
+window.updateImageSizeHints = function() {
+    const sectionSelect = document.getElementById('softSection');
+    const iconHint = document.getElementById('iconSizeHint');
+    const bannerHint = document.getElementById('bannerSizeHint');
+    if (!sectionSelect || !iconHint || !bannerHint) return;
+
+    const currentSection = sectionSelect.value;
+    const hints = sectionSizeMap[currentSection] || sectionSizeMap['trending_software'];
+    
+    iconHint.innerText = hints.icon;
+    bannerHint.innerText = hints.banner;
+    
+    if (currentSection === 'best_selling_games') {
+        bannerHint.style.color = '#e11d48';
+    } else {
+        bannerHint.style.color = '#0284c7';
+    }
+};
+
+const sectionDropdown = document.getElementById('softSection');
+if (sectionDropdown) {
+    sectionDropdown.addEventListener('change', window.updateImageSizeHints);
+}
